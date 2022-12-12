@@ -1,21 +1,50 @@
-import { useEffect, useRef } from "react";
+import "./Canvas.css";
+import { useState, useEffect, useRef } from "react";
 
-// Bare Bones Canvas Element takes in draw function
-// height and weight as the input
-const Canvas = ({ draw, height, width }) => {
-  const canvas = useRef();
+const Canvas = ({ height, width }) => {
+  const [isPainting, setIsPainting] = useState(false);
+  const canvasRef = useRef(null);
 
-  useEffect(() => {
-    const context = canvas.current.getContext('2d');
-    draw(context);
+  let context;
+  useEffect (() => {
+    context = canvasRef.current.getContext('2d');
   })
+  
+  const draw = (e) => {
+    if (!isPainting) return;
+
+    context.lineWidth = 10;
+    context.lineCap = "round";
+    context.strokeStyle = "red";
+
+    const offsetY = canvasRef.current.getBoundingClientRect().top;
+    const offsetX = canvasRef.current.getBoundingClientRect().left;
+    
+    context.lineTo(e.clientX - offsetX, e.clientY - offsetY);
+    context.stroke();
+    context.beginPath();
+    context.moveTo(e.clientX - offsetX, e.clientY - offsetY);
+  }
+
+  const startPainting = () => {
+    setIsPainting(true);
+  }
+
+  const stopPainting = () => {
+    setIsPainting(false);
+    context.beginPath();
+  }
+
 
   return (
     <canvas 
       id="canvas" 
       width={width}
       height={height}
-      ref={canvas}
+      ref={canvasRef}
+      onMouseDown={startPainting}
+      onMouseUp={stopPainting}
+      onMouseMove={draw}
     />
   )
 }

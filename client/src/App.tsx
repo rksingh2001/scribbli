@@ -1,14 +1,10 @@
 import './App.css';
 import Canvas from './components/Canvas/Canvas';
 
-const draw = (context: CanvasRenderingContext2D) => {
-  //
-}
-
 const App = () => {
   return (
-    <div className="App" style={{display: "flex", justifyContent: "center", alignItems: "center"}}>
-      <Canvas draw={draw} width={200} height={200} />
+    <div className="App" style={{ height:"100vh", display: "flex", justifyContent: "center", alignItems: "center"}}>
+      <Canvas width={1000} height={600} />
     </div>
   );
 }
