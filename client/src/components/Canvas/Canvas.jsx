@@ -15,7 +15,7 @@ const Canvas = ({ height, width }) => {
 
     context.lineWidth = 10;
     context.lineCap = "round";
-    context.strokeStyle = "red";
+    context.strokeStyle = "purple";
 
     const offsetY = canvasRef.current.getBoundingClientRect().top;
     const offsetX = canvasRef.current.getBoundingClientRect().left;
