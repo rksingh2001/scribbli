@@ -3,5 +3,6 @@ body {
   padding: 0;
   height: 100%;
   overflow: hidden;
-  color: white;
+  color: black;
+  background-color: purple;
 }

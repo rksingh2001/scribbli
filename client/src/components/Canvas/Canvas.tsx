@@ -1,15 +1,14 @@
 import "./Canvas.css";
-import type { MouseEventHandler } from 'react';
+import { MouseEventHandler, useContext } from 'react';
 
 import { useState, useEffect, useRef } from "react";
-import { io } from "socket.io-client";
 
-// This creates a socket connection with the server
-const socket = io("http://localhost:8000");
+import { SocketContext } from "../../context/socket";
 
 const Canvas = ({ height, width } : {height:any, width:any}) => {
   const [isPainting, setIsPainting] = useState(false);
-  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const socket = useContext(SocketContext);
 
   useEffect(() => {
     // This creates a socket connection with the server 
