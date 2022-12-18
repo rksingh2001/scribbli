@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const socket_io_1 = require("socket.io");
+// import { v4 } from 'uuid';
 const cors_1 = __importDefault(require("cors"));
 const http = require('http');
 dotenv_1.default.config();
@@ -21,19 +22,33 @@ const io = new socket_io_1.Server(server, {
 });
 io.on("connection", (socket) => {
     console.log(`User Connected: ${socket.id}`);
-    socket.on("send_coordinates", (data) => {
-        console.log(data);
+    socket.on("create-new-room", (data) => {
+        // We are using the socket id for the admin/creator
+        // of the room to create room, users will be able
+        // to join the room if they have socket.id of that user
+        socket.join(socket.id);
+    });
+    socket.on("join-room", (uuid) => {
+        socket.join(uuid);
+        const clients = io.sockets.adapter.rooms.get(uuid);
+        const numClients = clients ? clients.size : 0;
+        io.to(uuid).emit("player-joined", socket.id);
+    });
+    socket.on("start", (uuid) => {
+        io.to(uuid).emit("start", {});
+    });
+    socket.on("send_coordinates", ({ roomID, pos }) => {
         // Sends the message to all the clients
         // except the one it recieved it from
-        socket.broadcast.emit("recieve_message", data);
+        io.to(roomID).emit("recieve_message", pos);
     });
-    socket.on("mouse-down", (data) => {
+    socket.on("mouse-down", ({ roomID }) => {
         // data here is just {}
-        socket.broadcast.emit("mouse-down", data);
+        io.to(roomID).emit("mouse-down", {});
     });
-    socket.on("mouse-up", (data) => {
+    socket.on("mouse-up", ({ roomID }) => {
         // data here is just {}
-        socket.broadcast.emit("mouse-up", data);
+        io.to(roomID).emit("mouse-up", {});
     });
 });
 server.listen(port, () => {

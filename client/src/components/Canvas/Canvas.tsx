@@ -1,23 +1,14 @@
 import "./Canvas.css";
-import { MouseEventHandler, useContext } from 'react';
 
-import { useState, useEffect, useRef } from "react";
-
+import { useState, useEffect, useRef, MouseEventHandler, useContext } from "react";
 import { SocketContext } from "../../context/socket";
+import { RoomIdContext } from '../../context/roomid';
 
-const Canvas = ({ height, width } : {height:any, width:any}) => {
+const Canvas = ({ height, width } : {height: number, width: number}) => {
   const [isPainting, setIsPainting] = useState(false);
+  const roomIdContext = useContext(RoomIdContext);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const socket = useContext(SocketContext);
-
-  useEffect(() => {
-    // This creates a socket connection with the server 
-    const createConnection = () =>  { 
-      socket.emit("send_data", { message: "hello" });
-    }
-
-    createConnection();
-  }, [])
 
   useEffect(() => {
     socket.on("recieve_message", (data) => {
@@ -104,7 +95,8 @@ const Canvas = ({ height, width } : {height:any, width:any}) => {
         const pos = { posX, posY }
         
         // We can transfer the data
-        socket.emit("send_coordinates", pos);
+        const roomID = roomIdContext.roomID;
+        socket.emit("send_coordinates", { roomID, pos });
       }
     } else {
       throw console.error("Context Not Found");
@@ -114,13 +106,15 @@ const Canvas = ({ height, width } : {height:any, width:any}) => {
   }
 
   const handleMouseDown = () => {
-    socket.emit("mouse-down", {});
+    const roomID = roomIdContext.roomID;
+    socket.emit("mouse-down", { roomID });
 
     startPainting();
   }
 
   const handleMouseUp = () => {
-    socket.emit("mouse-up", {});
+    const roomID = roomIdContext.roomID;
+    socket.emit("mouse-up", { roomID });
 
     stopPainting();
   }
@@ -149,6 +143,7 @@ const Canvas = ({ height, width } : {height:any, width:any}) => {
       onMouseDown={handleMouseDown}
       onMouseUp={handleMouseUp}
       onMouseMove={handleMouseMove}
+      style={{ backgroundColor: "white" }}
     />
   )
 }
