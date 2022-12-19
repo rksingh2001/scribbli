@@ -22,6 +22,10 @@ const io = new socket_io_1.Server(server, {
 });
 io.on("connection", (socket) => {
     console.log(`User Connected: ${socket.id}`);
+    socket.on("send-message", ({ roomID, msg }) => {
+        const socketID = socket.id;
+        io.to(roomID).emit("recieve-message", { senderID: socketID, msg: msg });
+    });
     socket.on("create-new-room", (data) => {
         // We are using the socket id for the admin/creator
         // of the room to create room, users will be able
@@ -30,8 +34,8 @@ io.on("connection", (socket) => {
     });
     socket.on("join-room", (uuid) => {
         socket.join(uuid);
-        const clients = io.sockets.adapter.rooms.get(uuid);
-        const numClients = clients ? clients.size : 0;
+        // const clients = io.sockets.adapter.rooms.get(uuid);
+        // const numClients = clients ? clients.size : 0;
         io.to(uuid).emit("player-joined", socket.id);
     });
     socket.on("start", (uuid) => {
