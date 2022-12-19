@@ -13,9 +13,7 @@ const ChatWidget = ({ height, width } : { height: number, width: number }) => {
     socket.on("recieve-message", ({ senderID, msg }) => {
       setMessages(current => [...current, msg]);
     })
-  }, [])
-
-  console.log(messages)
+  }, []);
 
   const handleChange = (e: any) => {
     setInputValue(e.target.value);
