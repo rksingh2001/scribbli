@@ -1,7 +1,6 @@
 import express, { Express, Request, Response } from 'express';
 import dotenv from 'dotenv';
 import { Server } from 'socket.io';
-// import { v4 } from 'uuid';
 import cors from 'cors';
 const http = require('http');
 

@@ -6,7 +6,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const socket_io_1 = require("socket.io");
-// import { v4 } from 'uuid';
 const cors_1 = __importDefault(require("cors"));
 const http = require('http');
 dotenv_1.default.config();
