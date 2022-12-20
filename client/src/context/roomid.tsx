@@ -5,7 +5,7 @@ type RoomIDContextType = {
   setRoomID: React.Dispatch<React.SetStateAction<string>>
 }
 
-export const RoomIdContext = createContext<RoomIDContextType>({roomID : "", setRoomID: () => {}});
+export const RoomIdContext = createContext<RoomIDContextType>({ roomID : "", setRoomID: () => {} });
 
 export const RoomIDProvider = ({ children } : { children: React.ReactNode }) => {
   const [roomID, setRoomID] = useState("");

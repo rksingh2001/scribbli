@@ -1,15 +1,27 @@
-import { useState, useContext } from 'react';
+import './JoinExistingRoomPage.scss';
+
+import { useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { SocketContext } from '../../context/socket';
 import { RoomIdContext } from '../../context/roomid';
+import { PlayersContext } from '../../context/players';
 
-import './JoinExistingRoomPage.scss';
 
 const JoinExistingRoomPage = () => {
   const socket = useContext(SocketContext);
   const roomIdContext = useContext(RoomIdContext);
+  const playersContext = useContext(PlayersContext);
   const [roomID, setRoomID] = useState("");
   const navigate = useNavigate();
+
+  console.log(playersContext.players)
+
+  useEffect(() => {
+    socket.on("players-event", (players) => {
+      console.log(players);
+      // playersContext.addPlayer(playerID);
+    })
+  }, [])
 
   const handleChange = (e) => {
     setRoomID(e.target.value);

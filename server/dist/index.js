@@ -35,7 +35,13 @@ io.on("connection", (socket) => {
         socket.join(uuid);
         // const clients = io.sockets.adapter.rooms.get(uuid);
         // const numClients = clients ? clients.size : 0;
-        io.to(uuid).emit("player-joined", socket.id);
+        // We want to send the list of all the clients to the client
+        // after it joins the room
+        const clients = io.sockets.adapter.rooms.get(uuid);
+        if (clients)
+            io.in(uuid).emit("players-event", [...clients]);
+        else
+            throw console.error("No Clients in the room:", uuid);
     });
     socket.on("start", (uuid) => {
         io.to(uuid).emit("start", {});
