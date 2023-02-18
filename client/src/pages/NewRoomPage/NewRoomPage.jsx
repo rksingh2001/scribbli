@@ -21,7 +21,8 @@ const NewRoomPage = () => {
     roomIdContext.setRoomID(socketID);
     playersContext.setPlayers([socketID]);
 
-    socket.on("players-joined", (players) => {
+    socket.on("players-event", (players) => {
+      console.log(players)
       playersContext.setPlayers(players);
     })
   }, [])
