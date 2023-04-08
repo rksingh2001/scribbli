@@ -15,9 +15,12 @@ const server = http.createServer(app);
 const port = process.env.PORT;
 const io = new socket_io_1.Server(server, {
     cors: {
-        origin: `http://localhost:3000`,
+        origin: `*`,
         methods: ["GET", "POST"]
     }
+});
+app.get("/", (req, res) => {
+    res.send("Server responding!");
 });
 io.on("connection", (socket) => {
     console.log(`User Connected: ${socket.id}`);
