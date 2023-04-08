@@ -2,7 +2,7 @@ import express, { Express, Request, Response } from 'express';
 import dotenv from 'dotenv';
 import { Server } from 'socket.io';
 import cors from 'cors';
-const http = require('http');
+import http from 'http';
 
 dotenv.config();
 
@@ -21,6 +21,8 @@ const io = new Server(server, {
 app.get("/", (req, res) => {
   res.send("Server responding!");
 })
+
+// We want some form of data
 
 io.on("connection", (socket) => {
   console.log(`User Connected: ${socket.id}`)
