@@ -5,13 +5,13 @@ import { useContext } from 'react';
 import { SocketContext } from '../../context/socket';
 
 import { useNavigate } from 'react-router-dom';
-import { RoomIdContext } from '../../context/roomid';
 import usePlayerTurnId from '../../store/playerTurnStore';
 import usePlayerList from '../../store/playerList';
+import useRoomId from '../../store/roomId';
 
 const NewRoomPage = () => {
   const socket = useContext(SocketContext);
-  const roomIdContext = useContext(RoomIdContext);
+  const setRoomId = useRoomId(state => state.setRoomId);
   const [socketID] = useState(socket.id);
   const navigate = useNavigate();
   const setPlayerTurnId = usePlayerTurnId((state) => state.setPlayerTurnId);
@@ -22,7 +22,7 @@ const NewRoomPage = () => {
   console.log(playerList);
 
   useEffect(() => {
-    roomIdContext.setRoomID(socketID);
+    setRoomId(socketID);
     setPlayerList([socketID]);
 
     socket.on("start", (data) => {

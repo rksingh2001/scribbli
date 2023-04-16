@@ -6,7 +6,7 @@ type PlayerTurnIdType = {
 }
 
 const usePlayerTurnId = create<PlayerTurnIdType>((set) => ({
-  playerTurnId: 'Not set yet',
+  playerTurnId: '',
   setPlayerTurnId: (playerTurnId: string) => set(() => ({ playerTurnId: playerTurnId }))
 }))
 

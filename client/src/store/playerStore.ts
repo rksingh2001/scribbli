@@ -6,7 +6,7 @@ type PlayerType = {
 }
 
 const usePlayer = create<PlayerType>((set) => ({
-  name: 'Not set yet',
+  name: '',
   setName: (name: string) => set(() => ({ name: name }))
 }))
 

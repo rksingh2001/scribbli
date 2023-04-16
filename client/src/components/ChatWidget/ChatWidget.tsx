@@ -1,13 +1,13 @@
 import { useContext, useState, useEffect } from 'react';
 import './ChatWidget.scss';
 import { SocketContext } from '../../context/socket';
-import { RoomIdContext } from '../../context/roomid';
+import useRoomId from '../../store/roomId';
 
 const ChatWidget = ({ height, width } : { height: number, width: number }) => {
   const [messages, setMessages] = useState([""]);
   const [inputValue, setInputValue] = useState("");
   const socket = useContext(SocketContext);
-  const roomIDContext = useContext(RoomIdContext);
+  const roomId = useRoomId(state => state.roomId);
 
   useEffect(() => {
     socket.on("recieve-message", ({ senderID, msg }) => {
@@ -23,7 +23,7 @@ const ChatWidget = ({ height, width } : { height: number, width: number }) => {
     if (e.key !==  'Enter') return;
     
     // Emit the Message to rest of the users
-    socket.emit("send-message", { roomID: roomIDContext.roomID, msg: inputValue });
+    socket.emit("send-message", { roomId: roomId, msg: inputValue });
     setInputValue("");
   }
 

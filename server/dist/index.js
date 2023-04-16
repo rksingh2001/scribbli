@@ -81,9 +81,9 @@ const startGame = (roomName) => __awaiter(void 0, void 0, void 0, function* () {
 });
 io.on("connection", (socket) => {
     console.log(`User Connected: ${socket.id}`);
-    socket.on("send-message", ({ roomID, msg }) => {
+    socket.on("send-message", ({ roomId, msg }) => {
         const socketID = socket.id;
-        io.to(roomID).emit("recieve-message", { senderID: socketID, msg: msg });
+        io.to(roomId).emit("recieve-message", { senderID: socketID, msg: msg });
     });
     socket.on("create-new-room", (data) => {
         // We are using the socket id for the admin/creator
@@ -106,18 +106,18 @@ io.on("connection", (socket) => {
     socket.on("start", (uuid) => {
         startGame(uuid);
     });
-    socket.on("send_coordinates", ({ roomID, pos }) => {
+    socket.on("send_coordinates", ({ roomId, pos }) => {
         // Sends the message to all the clients
         // except the one it recieved it from
-        io.to(roomID).emit("recieve_message", pos);
+        io.to(roomId).emit("recieve_message", pos);
     });
-    socket.on("mouse-down", ({ roomID }) => {
+    socket.on("mouse-down", ({ roomId }) => {
         // data here is just {}
-        io.to(roomID).emit("mouse-down", {});
+        io.to(roomId).emit("mouse-down", {});
     });
-    socket.on("mouse-up", ({ roomID }) => {
+    socket.on("mouse-up", ({ roomId }) => {
         // data here is just {}
-        io.to(roomID).emit("mouse-up", {});
+        io.to(roomId).emit("mouse-up", {});
     });
 });
 server.listen(port, () => {

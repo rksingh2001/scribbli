@@ -2,11 +2,11 @@ import "./Canvas.css";
 
 import { useState, useEffect, useRef, MouseEventHandler, useContext } from "react";
 import { SocketContext } from "../../context/socket";
-import { RoomIdContext } from '../../context/roomid';
+import useRoomId from "../../store/roomId";
 
 const Canvas = ({ height, width, disable } : {height: number, width: number, disable: boolean}) => {
   const [isPainting, setIsPainting] = useState(false);
-  const roomIdContext = useContext(RoomIdContext);
+  const roomId = useRoomId(state => state.roomId);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const socket = useContext(SocketContext);
 
@@ -95,8 +95,7 @@ const Canvas = ({ height, width, disable } : {height: number, width: number, dis
         const pos = { posX, posY }
         
         // We can transfer the data
-        const roomID = roomIdContext.roomID;
-        socket.emit("send_coordinates", { roomID, pos });
+        socket.emit("send_coordinates", { roomId, pos });
       }
     } else {
       throw console.error("Context Not Found");
@@ -106,15 +105,13 @@ const Canvas = ({ height, width, disable } : {height: number, width: number, dis
   }
 
   const handleMouseDown = () => {
-    const roomID = roomIdContext.roomID;
-    socket.emit("mouse-down", { roomID });
+    socket.emit("mouse-down", { roomId });
 
     startPainting();
   }
 
   const handleMouseUp = () => {
-    const roomID = roomIdContext.roomID;
-    socket.emit("mouse-up", { roomID });
+    socket.emit("mouse-up", { roomId });
 
     stopPainting();
   }
