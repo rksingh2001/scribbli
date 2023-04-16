@@ -6,23 +6,24 @@ import { SocketContext } from '../../context/socket';
 
 import { useNavigate } from 'react-router-dom';
 import { RoomIdContext } from '../../context/roomid';
-import { PlayersContext } from '../../context/players';
 import usePlayerTurnId from '../../store/playerTurnStore';
+import usePlayerList from '../../store/playerList';
 
 const NewRoomPage = () => {
   const socket = useContext(SocketContext);
   const roomIdContext = useContext(RoomIdContext);
-  const playersContext = useContext(PlayersContext);
   const [socketID] = useState(socket.id);
   const navigate = useNavigate();
   const setPlayerTurnId = usePlayerTurnId((state) => state.setPlayerTurnId);
-  console.log("setPlayerTurnId", setPlayerTurnId);
+  const playerList = usePlayerList(state => state.playerList);
+  const setPlayerList = usePlayerList(state => state.setPlayerList);
 
-  console.log(playersContext.players);
+  console.log("setPlayerTurnId", setPlayerTurnId);
+  console.log(playerList);
 
   useEffect(() => {
     roomIdContext.setRoomID(socketID);
-    playersContext.setPlayers([socketID]);
+    setPlayerList([socketID]);
 
     socket.on("start", (data) => {
       setPlayerTurnId(data.playerTurn);
@@ -31,8 +32,7 @@ const NewRoomPage = () => {
     })
 
     socket.on("players-event", (players) => {
-      console.log(players)
-      playersContext.setPlayers(players);
+      setPlayerList(players);
     })
   }, [])
 
@@ -43,7 +43,7 @@ const NewRoomPage = () => {
 
   return (
     <div className="new-room-page">
-      <div>Players in Room: {playersContext.players.length}</div>
+      <div>Players in Room: {playerList.length}</div>
       <div>New Room Unique ID : {socketID}</div>
       <div>Copy the ID</div>
       <div>Waiting for users to join...</div>

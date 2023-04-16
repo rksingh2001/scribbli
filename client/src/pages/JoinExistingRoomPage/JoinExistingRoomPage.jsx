@@ -4,22 +4,22 @@ import { useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { SocketContext } from '../../context/socket';
 import { RoomIdContext } from '../../context/roomid';
-import { PlayersContext } from '../../context/players';
+import usePlayerList from '../../store/playerList';
 
 
 const JoinExistingRoomPage = () => {
   const socket = useContext(SocketContext);
   const roomIdContext = useContext(RoomIdContext);
-  const playersContext = useContext(PlayersContext);
+  const playerList = usePlayerList(state => state.playerList);
+  const setPlayerList = usePlayerList(state => state.setPlayerList);
   const [roomID, setRoomID] = useState("");
   const navigate = useNavigate();
 
-  console.log(playersContext.players)
+  console.log(playerList)
 
   useEffect(() => {
     socket.on("players-event", (players) => {
-      console.log(players);
-      // playersContext.addPlayer(playerID);
+      setPlayerList(players);
     })
   }, [])
 
