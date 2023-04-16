@@ -10,26 +10,23 @@ import DrawingPage from './pages/DrawingPage/DrawingPage';
 import NewRoomPage from './pages/NewRoomPage/NewRoomPage';
 import JoinExistingRoomPage from './pages/JoinExistingRoomPage/JoinExistingRoomPage';
 import WaitingRoomPage from "./pages/WaitingRoomPage/WaitingRoomPage";
-import { PlayerTurnProvider } from "./context/playerTurn";
 
 const App = () => {
   return (
     <PlayerProvider>
       <PlayersProvider>
         <RoomIDProvider>
-          <PlayerTurnProvider>
-            <SocketContext.Provider value={socket}>
-              <BrowserRouter>
-                <Routes>
-                  <Route path="/" element={<LandingPage />} />
-                  <Route path="/DrawingPage" element={<DrawingPage />} />
-                  <Route path="/NewRoomPage" element={<NewRoomPage />} />
-                  <Route path="/WaitingRoomPage" element={<WaitingRoomPage />} />
-                  <Route path="/JoinExistingRoomPage" element={<JoinExistingRoomPage />} />
-                </Routes>
-              </BrowserRouter>
-            </SocketContext.Provider>
-          </PlayerTurnProvider>
+          <SocketContext.Provider value={socket}>
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<LandingPage />} />
+                <Route path="/DrawingPage" element={<DrawingPage />} />
+                <Route path="/NewRoomPage" element={<NewRoomPage />} />
+                <Route path="/WaitingRoomPage" element={<WaitingRoomPage />} />
+                <Route path="/JoinExistingRoomPage" element={<JoinExistingRoomPage />} />
+              </Routes>
+            </BrowserRouter>
+          </SocketContext.Provider>
         </RoomIDProvider>
       </PlayersProvider>
     </PlayerProvider>

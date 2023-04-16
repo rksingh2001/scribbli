@@ -2,16 +2,16 @@ import { useContext, useEffect } from 'react';
 import './WaitingRoomPage.scss';
 import { SocketContext } from '../../context/socket';
 import { useNavigate } from 'react-router-dom';
-import { PlayerTurnContext } from '../../context/playerTurn';
+import usePlayerTurnId from '../../store/playerTurnStore';
 
 const WaitingRoomPage = () => {
   const socket = useContext(SocketContext);
-  const playerTurnContext = useContext(PlayerTurnContext);
   const navigate = useNavigate();
+  const setPlayerTurnId = usePlayerTurnId(state => state.setPlayerTurnId);
+
   useEffect(() => {
     socket.on("start", (data) => {
-      // playerTurnContext.setplayerTurnId(data.playerTurn)
-      
+      setPlayerTurnId(data.playerTurn);
       navigate("/DrawingPage");
     })
   }, [])
