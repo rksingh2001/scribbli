@@ -2,20 +2,21 @@ import './LandingPage.scss';
 
 import { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PlayerContext } from '../../context/player';
+import usePlayer from '../../store/playerStore';
 
 const LandingPage = () => {
   const navigate = useNavigate();
-  const playerContext = useContext(PlayerContext);
+  const playerName = usePlayer(state => state.playerName);
+  const setPlayerName = usePlayer(state => state.setPlayerName);
   
   const handleChange = (e) => {
-    playerContext.setName(e.target.value);
+    setPlayerName(e.target.value);
   }
 
   return (
     <div className="landing-page">
       <div className="name-div">
-        <h3 onChange={handleChange} value={playerContext.name} style={{ fontFamily: "sans-serif", color: "white" }}>Enter your name:</h3>
+        <h3 onChange={handleChange} value={playerName} style={{ fontFamily: "sans-serif", color: "white" }}>Enter your name:</h3>
         <input />
       </div>
       <button onClick={() => {navigate('/JoinExistingRoomPage')}}>Join Existing Room</button>
