@@ -22,7 +22,59 @@ app.get("/", (req, res) => {
   res.send("Server responding!");
 })
 
-// We want some form of data
+const sleep = (milliseconds: number) => {
+  return new Promise(resolve => setTimeout(resolve, milliseconds));
+}
+
+// This function will be the starting point of the game and will control the game flow
+// It will emit all the important stuff like what to do? Options to choose words
+// Will tell to all the clients, whose turn it is, would enable and disable drawing
+// for those clients respectively.
+const startGame = async (roomName: string) => {
+  const visitedPlayers: Set<string> = new Set();
+
+  // Limited to max 8 iterations so as not to create a lot of garbage memory
+  for (let i = 0; i < 8; ++i) {
+    const room = io?.sockets?.adapter?.rooms?.get(roomName) ?? "";
+    if (!room) {
+      console.error("Room doesn't exist");
+      return;
+    }
+
+    let playerSocketId = "";
+
+    for (const socketId of room) {
+      if (!visitedPlayers.has(socketId)) {
+        playerSocketId = socketId;
+        break;
+      }
+    }
+
+    if (playerSocketId !== "")  {
+      console.log("i: " + i);
+      // Assign a player turn
+      if (i === 0) {
+        io.in(roomName).emit("start", {
+          playerTurn: playerSocketId,
+        });
+      } else {
+        io.in(roomName).emit("change-player-turn", {
+          playerTurn: playerSocketId,
+        })
+      }
+
+      visitedPlayers.add(playerSocketId);
+
+      await sleep(10000);
+    } else {
+      // This means that this round is now over
+      break;
+    }
+  }
+
+  console.log("Round Ended!!!");
+  return;
+}
 
 io.on("connection", (socket) => {
   console.log(`User Connected: ${socket.id}`)
@@ -46,15 +98,15 @@ io.on("connection", (socket) => {
 
     // We want to send the list of all the clients to the client
     // after it joins the room
-    const clients = io.sockets.adapter.rooms.get(uuid);
-    if (clients)
-      io.in(uuid).emit("players-event", [...clients])
+    const players = io.sockets.adapter.rooms.get(uuid);
+    if (players)
+      io.in(uuid).emit("players-event", [...players])
     else
       throw console.error("No Clients in the room:", uuid);
   })
 
   socket.on("start", (uuid) => {
-    io.to(uuid).emit("start", {});
+    startGame(uuid);
   })
 
   socket.on("send_coordinates", ({ roomID, pos }) => {

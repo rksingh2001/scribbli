@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, MouseEventHandler, useContext } from "reac
 import { SocketContext } from "../../context/socket";
 import { RoomIdContext } from '../../context/roomid';
 
-const Canvas = ({ height, width } : {height: number, width: number}) => {
+const Canvas = ({ height, width, disable } : {height: number, width: number, disable: boolean}) => {
   const [isPainting, setIsPainting] = useState(false);
   const roomIdContext = useContext(RoomIdContext);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -135,6 +135,15 @@ const Canvas = ({ height, width } : {height: number, width: number}) => {
 
 
   return (
+    disable ?
+    <canvas
+      id="canvas" 
+      width={width}
+      height={height}
+      ref={canvasRef}
+      style={{ backgroundColor: "white" }}
+    /> 
+    :
     <canvas 
       id="canvas" 
       width={width}
