@@ -10,7 +10,8 @@ const WaitingRoomPage = () => {
   const navigate = useNavigate();
   useEffect(() => {
     socket.on("start", (data) => {
-      playerTurnContext.setplayerTurnId(data.playerTurn)
+      // playerTurnContext.setplayerTurnId(data.playerTurn)
+      
       navigate("/DrawingPage");
     })
   }, [])

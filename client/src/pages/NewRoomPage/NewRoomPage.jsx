@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { RoomIdContext } from '../../context/roomid';
 import { PlayersContext } from '../../context/players';
 import { PlayerTurnContext } from '../../context/playerTurn';
+import usePlayerTurnId from '../../store/playerTurnStore';
 
 const NewRoomPage = () => {
   const socket = useContext(SocketContext);
@@ -16,6 +17,8 @@ const NewRoomPage = () => {
   const playerTurnContext = useContext(PlayerTurnContext);
   const [socketID] = useState(socket.id);
   const navigate = useNavigate();
+  const setPlayerTurnId = usePlayerTurnId((state) => state.setPlayerTurnId);
+  console.log("setPlayerTurnId", setPlayerTurnId);
 
   console.log(playersContext.players);
 
@@ -24,7 +27,8 @@ const NewRoomPage = () => {
     playersContext.setPlayers([socketID]);
 
     socket.on("start", (data) => {
-      playerTurnContext.setplayerTurnId(data?.playerTurn);
+      setPlayerTurnId(data.playerTurn);
+      // playerTurnContext.setplayerTurnId(data?.playerTurn);
       console.log("start", data.playerTurn);
       navigate("/DrawingPage");
     })
