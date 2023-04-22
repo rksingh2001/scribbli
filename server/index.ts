@@ -3,7 +3,8 @@ import dotenv from 'dotenv';
 import { Server } from 'socket.io';
 import cors from 'cors';
 import http from 'http';
-import { sleep } from './utilities';
+import { getRandomSuggestions, sleep } from './utilities';
+import { suggestions } from './constants';
 
 dotenv.config();
 
@@ -11,8 +12,6 @@ const app: Express = express();
 app.use(cors());
 const server = http.createServer(app);
 const port = process.env.PORT;
-
-const suggestions = ['raunak', 'something', 'brother']
 
 const io = new Server(server, {
   cors: {
@@ -55,12 +54,16 @@ const startGame = async (roomName: string) => {
       if (i === 0) {
         io.in(roomName).emit("start", {
           playerTurn: playerSocketId,
+          
         });
       } else {
         io.in(roomName).emit("change-player-turn", {
           playerTurn: playerSocketId,
         })
       }
+
+      const randomSuggestions = getRandomSuggestions(3, suggestions);
+      io.to(playerSocketId).emit("random-suggestions", { randomSuggestions: randomSuggestions });
 
       visitedPlayers.add(playerSocketId);
 

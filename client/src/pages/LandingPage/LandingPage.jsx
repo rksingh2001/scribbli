@@ -1,6 +1,5 @@
 import './LandingPage.scss';
 
-import { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import usePlayer from '../../store/playerStore';
 
