@@ -1,14 +1,14 @@
 import "./Canvas.css";
 
 import { useState, useEffect, useRef, MouseEventHandler, useContext } from "react";
-import { SocketContext } from "../../context/socket";
 import useRoomId from "../../store/roomId";
+import useSocket from "../../store/socket";
 
 const Canvas = ({ height, width, disable } : {height: number, width: number, disable: boolean}) => {
   const [isPainting, setIsPainting] = useState(false);
   const roomId = useRoomId(state => state.roomId);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const socket = useContext(SocketContext);
+  const socket = useSocket(state => state.socket);
 
   useEffect(() => {
     socket.on("recieve_message", (data) => {
