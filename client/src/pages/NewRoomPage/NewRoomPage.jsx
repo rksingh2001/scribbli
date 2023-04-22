@@ -1,16 +1,14 @@
 import './NewRoomPage.scss';
 import { useEffect, useState } from 'react';
-import { useContext } from 'react';
-
-import { SocketContext } from '../../context/socket';
 
 import { useNavigate } from 'react-router-dom';
 import usePlayerTurnId from '../../store/playerTurnStore';
 import usePlayerList from '../../store/playerList';
 import useRoomId from '../../store/roomId';
+import useSocket from '../../store/socket';
 
 const NewRoomPage = () => {
-  const socket = useContext(SocketContext);
+  const socket = useSocket(state => state.socket);
   const setRoomId = useRoomId(state => state.setRoomId);
   const [socketID] = useState(socket.id);
   const navigate = useNavigate();

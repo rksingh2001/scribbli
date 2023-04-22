@@ -2,13 +2,13 @@ import './JoinExistingRoomPage.scss';
 
 import { useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { SocketContext } from '../../context/socket';
 import usePlayerList from '../../store/playerList';
 import useRoomId from '../../store/roomId';
+import useSocket from '../../store/socket';
 
 
 const JoinExistingRoomPage = () => {
-  const socket = useContext(SocketContext);
+  const socket = useSocket(state => state.socket);
   const roomId = useRoomId(state => state.roomId);
   const setRoomId = useRoomId(state => state.setRoomId);
   const playerList = usePlayerList(state => state.playerList);

@@ -1,13 +1,13 @@
 import { useContext, useEffect, useState } from "react";
 import Canvas from "../../components/Canvas/Canvas";
 import ChatWidget from "../../components/ChatWidget/ChatWidget";
-import { SocketContext } from '../../context/socket';
 import usePlayerTurnId from "../../store/playerTurnStore";
+import useSocket from "../../store/socket";
 
 import './DrawingPage.scss';
 
 const DrawingPage = () => {
-  const socket = useContext(SocketContext);
+  const socket = useSocket(state => state.socket);
   const [socketID] = useState(socket.id);
   const [isDisabled, setIsDisabled] = useState(true);
   const playerTurnId = usePlayerTurnId((state) => state.playerTurnId);

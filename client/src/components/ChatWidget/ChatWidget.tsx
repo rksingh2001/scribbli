@@ -1,12 +1,12 @@
 import { useContext, useState, useEffect } from 'react';
 import './ChatWidget.scss';
-import { SocketContext } from '../../context/socket';
 import useRoomId from '../../store/roomId';
+import useSocket from '../../store/socket';
 
 const ChatWidget = ({ height, width } : { height: number, width: number }) => {
   const [messages, setMessages] = useState([""]);
   const [inputValue, setInputValue] = useState("");
-  const socket = useContext(SocketContext);
+  const socket = useSocket(state => state.socket);
   const roomId = useRoomId(state => state.roomId);
 
   useEffect(() => {

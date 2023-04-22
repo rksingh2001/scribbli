@@ -1,11 +1,11 @@
-import { useContext, useEffect } from 'react';
+import { useEffect } from 'react';
 import './WaitingRoomPage.scss';
-import { SocketContext } from '../../context/socket';
 import { useNavigate } from 'react-router-dom';
 import usePlayerTurnId from '../../store/playerTurnStore';
+import useSocket from '../../store/socket';
 
 const WaitingRoomPage = () => {
-  const socket = useContext(SocketContext);
+  const socket = useSocket(state => state.socket);
   const navigate = useNavigate();
   const setPlayerTurnId = usePlayerTurnId(state => state.setPlayerTurnId);
 
