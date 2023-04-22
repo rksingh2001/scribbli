@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import { Server } from 'socket.io';
 import cors from 'cors';
 import http from 'http';
+import { sleep } from './utilities';
 
 dotenv.config();
 
@@ -10,6 +11,8 @@ const app: Express = express();
 app.use(cors());
 const server = http.createServer(app);
 const port = process.env.PORT;
+
+const suggestions = ['raunak', 'something', 'brother']
 
 const io = new Server(server, {
   cors: {
@@ -21,10 +24,6 @@ const io = new Server(server, {
 app.get("/", (req, res) => {
   res.send("Server responding!");
 })
-
-const sleep = (milliseconds: number) => {
-  return new Promise(resolve => setTimeout(resolve, milliseconds));
-}
 
 // This function will be the starting point of the game and will control the game flow
 // It will emit all the important stuff like what to do? Options to choose words
