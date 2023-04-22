@@ -13,6 +13,7 @@ const useSocket = create<SocketType>((set) => ({
   socket: socket,
 }))
 
+// This is the beginning of player's turn on this round
 socket.on('random-suggestions', (data) => {
   const setRandomSuggestions = useGameState.getState().setRandomSuggestions;
   const setIsTimer = useGameState.getState().setIsTimer;

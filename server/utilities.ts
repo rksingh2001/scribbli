@@ -1,3 +1,4 @@
+import { io } from './index';
 export const sleep = (milliseconds: number) => {
   return new Promise(resolve => setTimeout(resolve, milliseconds));
 }
@@ -18,4 +19,11 @@ export const getRandomSuggestions = (count: number, suggestions: string[]) => {
   randomSuggestions.forEach(num => response.push(suggestions[num]));
 
   return response;
+}
+
+export const sendOnlyToSocketId = (socketId: string, eventName: string, data: object | null) => {
+  const socket = io.sockets.sockets.get(socketId);
+  if (socket) {
+    socket.emit(eventName, data);
+  }
 }

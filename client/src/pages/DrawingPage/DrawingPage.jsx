@@ -1,7 +1,8 @@
 import { useContext, useEffect, useState } from "react";
 import Canvas from "../../components/Canvas/Canvas";
 import ChatWidget from "../../components/ChatWidget/ChatWidget";
-import Timer from "../../components/Timer/Timer";
+import DrawingPageTimer from "../../components/DrawingPageTimer/DrawingPageTimer";
+import SelectWordTimer from "../../components/SuggestionsOverlay/SuggestionsOverlay";
 import useGameState from "../../store/gameState";
 import usePlayerTurnId from "../../store/playerTurnStore";
 import useSocket from "../../store/socket";
@@ -44,9 +45,12 @@ const DrawingPage = () => {
 
   return (
     <div className="drawing-page">
-      { isTimer ? <Timer /> : null }
-      <Canvas width={800} height={500} disable={isDisabled} />
-      <ChatWidget width={250} height={500} />
+      <div><DrawingPageTimer /></div>
+      { isTimer ? <SelectWordTimer /> : null }
+      <div style={{ display: 'flex', justifyContent: 'space-evenly', alignItems: 'center', flexDirection: 'row'}}>
+        <Canvas width={800} height={500} disable={isDisabled} />
+        <ChatWidget width={250} height={500} />
+      </div>
     </div>
   )
 }

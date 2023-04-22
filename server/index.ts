@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 import { Server } from 'socket.io';
 import cors from 'cors';
 import http from 'http';
-import { getRandomSuggestions, sleep } from './utilities';
+import { getRandomSuggestions, sendOnlyToSocketId, sleep } from './utilities';
 import { suggestions } from './constants';
 
 dotenv.config();
@@ -13,7 +13,9 @@ app.use(cors());
 const server = http.createServer(app);
 const port = process.env.PORT;
 
-const io = new Server(server, {
+const gameState = new Map();
+
+export const io = new Server(server, {
   cors: {
     origin: `*`,
     methods: ["GET", "POST"]
@@ -61,13 +63,28 @@ const startGame = async (roomName: string) => {
           playerTurn: playerSocketId,
         })
       }
-
+      
+      // Start of player's turn in a round
       const randomSuggestions = getRandomSuggestions(3, suggestions);
-      io.to(playerSocketId).emit("random-suggestions", { randomSuggestions: randomSuggestions });
+      sendOnlyToSocketId(playerSocketId, "random-suggestions", { randomSuggestions: randomSuggestions });
+      
+      // This controls the timer on the frontend while selecting
+      // any options for drawing
+      for (let i = 15; i >= 0; --i) {
+        io.in(roomName).emit('select-word-timer', { count: i });
+        io.in(roomName).emit('drawing-page-timer', { count: i, message: "Waiting for player to choose a word" });
+        await sleep(1000);
+      }
+
+      // Player turn to draw now
+      for (let i = 60; i >= 0; --i) {
+        io.in(roomName).emit('drawing-page-timer', { count: i, message: "Player is drawing, guess what it is" });
+        sendOnlyToSocketId(playerSocketId, 'drawing-page-timer', { count: i, message: "Your turn to draw" });
+        await sleep(1000);
+      }
 
       visitedPlayers.add(playerSocketId);
-
-      await sleep(10000);
+      // End of player's turn in a round
     } else {
       // This means that this round is now over
       break;
@@ -125,6 +142,10 @@ io.on("connection", (socket) => {
   socket.on("mouse-up", ({ roomId }) => {
     // data here is just {}
     io.to(roomId).emit("mouse-up", {});
+  })
+
+  socket.on("word-selected-to-draw", ({ roomId, word }) => {
+    gameState.set(roomId, { word: word });
   })
 });
 
