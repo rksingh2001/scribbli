@@ -17,8 +17,10 @@ const useSocket = create<SocketType>((set) => ({
 socket.on('random-suggestions', (data) => {
   const setRandomSuggestions = useGameState.getState().setRandomSuggestions;
   const setIsTimer = useGameState.getState().setIsTimer;
+  const setWordToDraw = useGameState.getState().setWordToDraw;
 
   setRandomSuggestions(data.randomSuggestions);
+  setWordToDraw(data.randomSuggestions[0]);
   setIsTimer(true);
 })
 

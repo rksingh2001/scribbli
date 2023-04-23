@@ -16,16 +16,8 @@ const SuggestionsOverlay = () => {
     socket.on('select-word-timer', ({ count }) => {
       // This needs to be added as this useEffect runs only once, and wordToDraw is passed
       // as the original value only
-      const wordToDraw  = useGameState.getState().wordToDraw;
 
       if (count === 0) {
-        if (wordToDraw === '') {
-          socket.emit('word-selected-to-draw', { word: randomSuggestions[0]});
-          setWordToDraw(randomSuggestions[0]);
-        } else {
-          socket.emit('word-selected-to-draw', { roomId: roomId, word: wordToDraw });
-        }
-
         setIsTimer(false);
         socket.off('select-word-timer');
       } else {
@@ -36,6 +28,7 @@ const SuggestionsOverlay = () => {
 
   const handleClick = (suggestion) => {
     console.log('suggestion', suggestion)
+    socket.emit('word-selected-to-draw', { word: randomSuggestions[0] });
     setWordToDraw(suggestion);
   }
 
