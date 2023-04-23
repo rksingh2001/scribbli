@@ -78,7 +78,7 @@ const startGame = async (roomName: string) => {
 
       // Player turn to draw now
       for (let i = 60; i >= 0; --i) {
-        io.in(roomName).emit('drawing-page-timer', { count: i, message: "Player is drawing, guess what it is" });
+        io.in(roomName).except(playerSocketId).emit('drawing-page-timer', { count: i, message: "Player is drawing, guess what it is" });
         sendOnlyToSocketId(playerSocketId, 'drawing-page-timer', { count: i, message: "Your turn to draw" });
         await sleep(1000);
       }
