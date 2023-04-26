@@ -1,16 +1,13 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import useGameState from '../../store/gameState';
-import useRoomId from '../../store/roomId';
 import { socket } from '../../store/socket';
 import './SuggestionsOverlay.scss';
 
 const SuggestionsOverlay = () => {
   const [seconds, setSeconds] = useState();
-  const intervalRef = useRef(null);
   const randomSuggestions = useGameState(state => state.randomSuggestions);
   const setIsTimer = useGameState(state => state.setIsTimer);
   const [wordToDraw, setWordToDraw] = useGameState(state => [state.wordToDraw, state.setWordToDraw]);
-  const roomId = useRoomId(state => state.roomId);
 
   useEffect(() => {
     socket.on('select-word-timer', ({ count }) => {
