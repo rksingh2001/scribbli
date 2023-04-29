@@ -42,7 +42,7 @@ const updateValuesInGameState = (newObj: Partial<GameStateObjectType>, roomId: s
     const newObjRef: GameStateObjectType = {
       isPlaying: false,
       // roomId because the room is created on the basis of creator's socket id
-      score: { roomId: 0 }
+      score: { [roomId]: 0 }
     };
 
     safeAssign(newObjRef, newObj);
@@ -159,6 +159,7 @@ const matchStringAndUpdateScore = (roomId: string, message: string, socketId: st
     gameStateObj.score[socketId] = 10;
   }
 
+  console.log("gameStateObj", gameStateObj.score);
   io.in(roomId).emit("score-updation", gameStateObj.score);
 }
 
@@ -167,6 +168,7 @@ io.on("connection", (socket) => {
 
   socket.on("send-message", ({ roomId, msg }) => {
     const socketID = socket.id;
+    console.log("mess", roomId, msg);
     matchStringAndUpdateScore(roomId, msg, socketID);
     io.to(roomId).emit("recieve-message", { senderID: socketID, msg: msg });
   })

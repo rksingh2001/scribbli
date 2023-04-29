@@ -2,6 +2,7 @@ import { useContext, useEffect, useState } from "react";
 import Canvas from "../../components/Canvas/Canvas";
 import ChatWidget from "../../components/ChatWidget/ChatWidget";
 import DrawingPageTimer from "../../components/DrawingPageTimer/DrawingPageTimer";
+import ScoreWidget from "../../components/ScoreWidget/ScoreWidget";
 import SelectWordTimer from "../../components/SuggestionsOverlay/SuggestionsOverlay";
 import useGameState from "../../store/gameState";
 import usePlayerTurnId from "../../store/playerTurnStore";
@@ -48,6 +49,7 @@ const DrawingPage = () => {
       <div><DrawingPageTimer /></div>
       { isTimer ? <SelectWordTimer /> : null }
       <div style={{ display: 'flex', justifyContent: 'space-evenly', alignItems: 'center', flexDirection: 'row'}}>
+        <ScoreWidget />
         <Canvas width={800} height={500} disable={isDisabled} />
         <ChatWidget width={250} height={500} />
       </div>
