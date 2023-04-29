@@ -1,8 +1,9 @@
+import "./ScoreWidget.scss";
 import { useEffect, useState } from "react";
 import usePlayerList from "../../store/playerList";
 import useSocket from "../../store/socket";
 
-const ScoreWidget = () => {
+const ScoreWidget = ({ width, height } : { width: number, height: number }) => {
   const playerList = usePlayerList(state => state.playerList);
   const socket = useSocket(state => state.socket);
 
@@ -27,13 +28,16 @@ const ScoreWidget = () => {
   }, []);
   
   return (
-    <div className="score-widget">
+    <div 
+      className="score-widget"
+      style={{ width: width, height: height }}
+    >
       {
         Object.entries(score).map(([key, value]) => (
-          <div key={key}>
-            <>
-              {key}: {value}
-            </>
+          <div className="score-widget-player" key={key}>
+            <div className="score-widget-player-name">{key}</div>
+            :
+            <div className="score-widget-player-score">{value}</div>
           </div>
         ))
       }

@@ -49,7 +49,7 @@ const DrawingPage = () => {
       <div><DrawingPageTimer /></div>
       { isTimer ? <SelectWordTimer /> : null }
       <div style={{ display: 'flex', justifyContent: 'space-evenly', alignItems: 'center', flexDirection: 'row'}}>
-        <ScoreWidget />
+        <ScoreWidget width={250} height={500} />
         <Canvas width={800} height={500} disable={isDisabled} />
         <ChatWidget width={250} height={500} />
       </div>
