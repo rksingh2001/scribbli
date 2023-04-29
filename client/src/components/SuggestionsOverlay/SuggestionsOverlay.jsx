@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import useGameState from '../../store/gameState';
+import useRoomId from '../../store/roomId';
 import { socket } from '../../store/socket';
 import './SuggestionsOverlay.scss';
 
@@ -8,6 +9,7 @@ const SuggestionsOverlay = () => {
   const randomSuggestions = useGameState(state => state.randomSuggestions);
   const setIsTimer = useGameState(state => state.setIsTimer);
   const [wordToDraw, setWordToDraw] = useGameState(state => [state.wordToDraw, state.setWordToDraw]);
+  const roomId = useRoomId(state => state.roomId);
 
   useEffect(() => {
     socket.on('select-word-timer', ({ count }) => {
@@ -24,8 +26,7 @@ const SuggestionsOverlay = () => {
   }, []);
 
   const handleClick = (suggestion) => {
-    console.log('suggestion', suggestion)
-    socket.emit('word-selected-to-draw', { word: randomSuggestions[0] });
+    socket.emit('word-selected-to-draw', { word: suggestion, roomId: roomId });
     setWordToDraw(suggestion);
   }
 

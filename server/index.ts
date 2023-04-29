@@ -13,7 +13,50 @@ app.use(cors());
 const server = http.createServer(app);
 const port = process.env.PORT;
 
-const gameState = new Map();
+type ScoreObjectType = {
+  [key: string]: number
+}
+
+type GameStateObjectType = {
+  isPlaying: boolean,
+  score: ScoreObjectType,
+  word?: string,
+}
+
+type GameStateType = Map<string, GameStateObjectType>;
+
+// roomId -> GameStateObject
+const gameState: GameStateType = new Map();
+const safeAssign: <T>(target: T, ...sources: Partial<T>[]) => T = Object.assign
+
+// Updates the key, or add the key if not already there
+const updateValuesInGameState = (newObj: Partial<GameStateObjectType>, roomId: string) => {
+  const gameStateObj = gameState.get(roomId);
+
+  if (!gameStateObj) {
+    // In case the object isn't present in the Map
+    // this make sures there is no error as newObj type is not gameStateObjectType
+
+    // Get the complete Map of all the people
+
+    const newObjRef: GameStateObjectType = {
+      isPlaying: false,
+      // roomId because the room is created on the basis of creator's socket id
+      score: { roomId: 0 }
+    };
+
+    safeAssign(newObjRef, newObj);
+
+    gameState.set(roomId, newObjRef);
+    return;
+  }
+
+  safeAssign(gameStateObj, newObj);
+
+  console.log(gameState.get(roomId));
+
+  return;
+}
 
 export const io = new Server(server, {
   cors: {
@@ -67,7 +110,6 @@ const startGame = async (roomName: string) => {
       // Start of player's turn in a round
       const randomSuggestions = getRandomSuggestions(3, suggestions);
       sendOnlyToSocketId(playerSocketId, "random-suggestions", { randomSuggestions: randomSuggestions });
-      gameState.set(roomName, { word: randomSuggestions[0] });
       
       // This controls the timer on the frontend while selecting
       // any options for drawing
@@ -96,11 +138,36 @@ const startGame = async (roomName: string) => {
   return;
 }
 
+const matchStringAndUpdateScore = (roomId: string, message: string, socketId: string) => {
+  const gameStateObj =  gameState.get(roomId);
+
+  if (!gameStateObj || !gameStateObj.word) {
+    // Word hasn't been selected or game doesn't exist
+    return;
+  }
+
+  if (message.toLowerCase() !== gameStateObj.word.toLowerCase()) {
+    return;
+  }
+
+  // String has matched, we should update the score
+  // and the message should have way to show that the word has matched
+  const curr_score = gameStateObj.score[socketId]
+  if (curr_score) {
+    gameStateObj.score[socketId] = curr_score + 10;
+  } else {
+    gameStateObj.score[socketId] = 10;
+  }
+
+  io.in(roomId).emit("score-updation", gameStateObj.score);
+}
+
 io.on("connection", (socket) => {
   console.log(`User Connected: ${socket.id}`)
 
   socket.on("send-message", ({ roomId, msg }) => {
     const socketID = socket.id;
+    matchStringAndUpdateScore(roomId, msg, socketID);
     io.to(roomId).emit("recieve-message", { senderID: socketID, msg: msg });
   })
 
@@ -125,8 +192,10 @@ io.on("connection", (socket) => {
       throw console.error("No Clients in the room:", uuid);
   })
 
-  socket.on("start", (uuid) => {
-    startGame(uuid);
+  socket.on("start", (roomId) => {
+    console.log("roomId1", roomId);
+    updateValuesInGameState({ isPlaying: true }, roomId);
+    startGame(roomId);
   })
 
   socket.on("send_coordinates", ({ roomId, pos }) => {
@@ -145,8 +214,9 @@ io.on("connection", (socket) => {
     io.to(roomId).emit("mouse-up", {});
   })
 
-  socket.on("word-selected-to-draw", ({ roomId, word }) => {
-    gameState.set(roomId, { word: word });
+  socket.on("word-selected-to-draw", ({ roomId, word } : { roomId: string, word: string }) => {
+    console.log('word-selected-to-draw', word);
+    updateValuesInGameState({ word: word }, roomId);
   })
 });
 
