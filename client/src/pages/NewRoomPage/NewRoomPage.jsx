@@ -9,7 +9,7 @@ import useSocket from '../../store/socket';
 
 const NewRoomPage = () => {
   const socket = useSocket(state => state.socket);
-  const setRoomId = useRoomId(state => state.setRoomId);
+  const roomId = useRoomId(state => state.roomId);
   const [socketID] = useState(socket.id);
   const navigate = useNavigate();
   const setPlayerTurnId = usePlayerTurnId((state) => state.setPlayerTurnId);
@@ -20,7 +20,6 @@ const NewRoomPage = () => {
   console.log(playerList);
 
   useEffect(() => {
-    setRoomId(socketID);
     setPlayerList([socketID]);
 
     socket.on("start", (data) => {
@@ -35,14 +34,14 @@ const NewRoomPage = () => {
   }, [])
 
   const handleStart = () => {
-    socket.emit("start", socketID);
+    socket.emit("start", roomId);
     navigate("/DrawingPage")
   }
 
   return (
     <div className="new-room-page">
       <div>Players in Room: {playerList.length}</div>
-      <div>New Room Unique ID : {socketID}</div>
+      <div>New Room Unique ID : {roomId}</div>
       <div>Copy the ID</div>
       <div>Waiting for users to join...</div>
       <button onClick={handleStart}>Start</button>

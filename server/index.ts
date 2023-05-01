@@ -5,6 +5,7 @@ import cors from 'cors';
 import http from 'http';
 import { getRandomSuggestions, sendOnlyToSocketId, sleep } from './utilities';
 import { suggestions } from './constants';
+import { v4 as uuidv4 } from 'uuid';
 
 dotenv.config();
 
@@ -17,10 +18,15 @@ type ScoreObjectType = {
   [key: string]: number
 }
 
+type hasGuessedTheWord = {
+  [key: string]: boolean
+}
+
 type GameStateObjectType = {
   isPlaying: boolean,
   score: ScoreObjectType,
   word?: string,
+  hasGuessedTheWord: hasGuessedTheWord
 }
 
 type GameStateType = Map<string, GameStateObjectType>;
@@ -29,25 +35,30 @@ type GameStateType = Map<string, GameStateObjectType>;
 const gameState: GameStateType = new Map();
 const safeAssign: <T>(target: T, ...sources: Partial<T>[]) => T = Object.assign
 
+const initializeGameState = (socketId: string, roomId: string) => {
+  const gameStateObj = gameState.get(roomId);
+
+  if (!gameStateObj) {
+    const newgameStateObj: GameStateObjectType = {
+      isPlaying: false,
+      score: { [socketId]: 0 },
+      hasGuessedTheWord: { [socketId]: false },
+    };
+
+    gameState.set(roomId, newgameStateObj);
+    return;
+  } else {
+    console.error("Game State Object already exists!");
+    return;
+  }
+}
+
 // Updates the key, or add the key if not already there
 const updateValuesInGameState = (newObj: Partial<GameStateObjectType>, roomId: string) => {
   const gameStateObj = gameState.get(roomId);
 
   if (!gameStateObj) {
-    // In case the object isn't present in the Map
-    // this make sures there is no error as newObj type is not gameStateObjectType
-
-    // Get the complete Map of all the people
-
-    const newObjRef: GameStateObjectType = {
-      isPlaying: false,
-      // roomId because the room is created on the basis of creator's socket id
-      score: { [roomId]: 0 }
-    };
-
-    safeAssign(newObjRef, newObj);
-
-    gameState.set(roomId, newObjRef);
+    console.error("Game State Object doesn't exist!");
     return;
   }
 
@@ -56,6 +67,11 @@ const updateValuesInGameState = (newObj: Partial<GameStateObjectType>, roomId: s
   console.log(gameState.get(roomId));
 
   return;
+}
+
+// Handled the gamestate when the player's turn is changed
+const handlePlayerTurnEnd = (roomId: string) => {
+  // Set all the values to false in gameStateObj.hasGuessed
 }
 
 export const io = new Server(server, {
@@ -128,6 +144,8 @@ const startGame = async (roomName: string) => {
 
       visitedPlayers.add(playerSocketId);
       // End of player's turn in a round
+
+      handlePlayerTurnEnd(roomName);
     } else {
       // This means that this round is now over
       break;
@@ -146,9 +164,11 @@ const matchStringAndUpdateScore = (roomId: string, message: string, socketId: st
     return;
   }
 
-  if (message.toLowerCase() !== gameStateObj.word.toLowerCase()) {
+  if (message.toLowerCase() !== gameStateObj.word.toLowerCase() || gameStateObj.hasGuessedTheWord[socketId]) {
     return;
   }
+  
+  gameStateObj.hasGuessedTheWord[socketId] = true;
 
   // String has matched, we should update the score
   // and the message should have way to show that the word has matched
@@ -173,11 +193,13 @@ io.on("connection", (socket) => {
     io.to(roomId).emit("recieve-message", { senderID: socketID, msg: msg });
   })
 
-  socket.on("create-new-room", (data) => {
+  socket.on("create-new-room", () => {
     // We are using the socket id for the admin/creator
     // of the room to create room, users will be able
     // to join the room if they have socket.id of that user
-    socket.join(socket.id);
+    const roomId = uuidv4();
+    socket.join(roomId);
+    socket.emit("room-id", { roomId: roomId });
   })
 
   socket.on("join-room", (uuid) => {
@@ -196,6 +218,7 @@ io.on("connection", (socket) => {
 
   socket.on("start", (roomId) => {
     console.log("roomId1", roomId);
+    initializeGameState(socket.id, roomId);
     updateValuesInGameState({ isPlaying: true }, roomId);
     startGame(roomId);
   })
