@@ -26,6 +26,16 @@ const ScoreWidget = ({ width, height } : { width: number, height: number }) => {
         setScore(scoreObj);
     })
   }, []);
+
+  const getPlayerNameFromList = (socketId: string) => {
+    for (let i = 0; i < playerList.length; ++i) {
+      const playerObj = playerList[i];
+      if (playerObj.playerId === socketId) {
+        return playerObj.playerName;
+      }
+    }
+    return "Name Not Found";
+  }
   
   return (
     <div 
@@ -35,7 +45,7 @@ const ScoreWidget = ({ width, height } : { width: number, height: number }) => {
       {
         Object.entries(score).map(([key, value]) => (
           <div className="score-widget-player" key={key}>
-            <div className="score-widget-player-name">{key}</div>
+            <div className="score-widget-player-name">{getPlayerNameFromList(key)}</div>
             :
             <div className="score-widget-player-score">{value}</div>
           </div>
