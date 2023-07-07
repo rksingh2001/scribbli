@@ -1,13 +1,18 @@
 import { create } from "zustand";
 
+type playerObjType = {
+  playerId: string,
+  playerName: string,
+}
+
 type PlayerListType = {
-  playerList: string[]
+  playerList: playerObjType[]
   setPlayerList: Function
 }
 
 const usePlayerList = create<PlayerListType>((set) => ({
   playerList: [],
-  setPlayerList: (playerList: string[]) => set(() => ({ playerList: playerList }))
+  setPlayerList: (playerList: playerObjType[]) => set(() => ({ playerList: playerList }))
 }))
 
 export default usePlayerList;

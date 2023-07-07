@@ -13,7 +13,7 @@ const ScoreWidget = ({ width, height } : { width: number, height: number }) => {
 
   const initialScoreObj: ScoreObjectType = {};
 
-  playerList.forEach(playerId => {
+  playerList.forEach(({ playerId }) => {
     initialScoreObj[playerId] = 0;
   });
 

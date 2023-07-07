@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 import { Server } from 'socket.io';
 import cors from 'cors';
 import http from 'http';
-import { getRandomSuggestions, sendOnlyToSocketId, sleep } from './utilities';
+import { getPlayersList, getRandomSuggestions, sendOnlyToSocketId, sleep } from './utilities';
 import { suggestions } from './constants';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -31,7 +31,7 @@ type GameStateObjectType = {
 
 type GameStateType = Map<string, GameStateObjectType>;
 
-const playerNameMap : Map<string, string> = new Map();
+export const playerNameMap : Map<string, string> = new Map();
 
 // roomId -> GameStateObject
 const gameState: GameStateType = new Map();
@@ -211,11 +211,10 @@ io.on("connection", (socket) => {
 
     // We want to send the list of all the clients to the client
     // after it joins the room
-    const players = io.sockets.adapter.rooms.get(roomId);
-    if (players)
-      io.in(roomId).emit("players-event", [...players])
-    else
-      throw console.error("No Clients in the room:", roomId);
+    // const players = io.sockets.adapter.rooms.get(roomId);
+
+    const players = getPlayersList(roomId);
+    io.in(roomId).emit("players-event", players)
   })
 
   socket.on("save-name", ({ playerName }) => {

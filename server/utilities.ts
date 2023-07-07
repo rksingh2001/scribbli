@@ -1,4 +1,10 @@
-import { io } from './index';
+import { io, playerNameMap } from './index';
+
+type playerObjType = {
+  playerId: string,
+  playerName: string,
+}
+
 export const sleep = (milliseconds: number) => {
   return new Promise(resolve => setTimeout(resolve, milliseconds));
 }
@@ -25,5 +31,25 @@ export const sendOnlyToSocketId = (socketId: string, eventName: string, data: ob
   const socket = io.sockets.sockets.get(socketId);
   if (socket) {
     socket.emit(eventName, data);
+  }
+}
+
+// Returns the list of players with their names
+export const getPlayersList = (roomId: string) => {
+  const playersSocketId = io.sockets.adapter.rooms.get(roomId);
+  if (playersSocketId) {
+    const playersSocketList = [...playersSocketId];
+    const playersList : playerObjType[] = [];
+
+    playersSocketList.forEach(socketId => {
+      playersList.push({
+        playerId: socketId,
+        playerName: playerNameMap.get(socketId) ?? "",
+      })
+    })
+
+    return playersList;
+  } else {
+    return [];
   }
 }
