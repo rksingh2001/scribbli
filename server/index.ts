@@ -31,6 +31,8 @@ type GameStateObjectType = {
 
 type GameStateType = Map<string, GameStateObjectType>;
 
+const playerNameMap : Map<string, string> = new Map();
+
 // roomId -> GameStateObject
 const gameState: GameStateType = new Map();
 const safeAssign: <T>(target: T, ...sources: Partial<T>[]) => T = Object.assign
@@ -202,18 +204,22 @@ io.on("connection", (socket) => {
     socket.emit("room-id", { roomId: roomId });
   })
 
-  socket.on("join-room", (uuid) => {
-    socket.join(uuid);
-    // const clients = io.sockets.adapter.rooms.get(uuid);
+  socket.on("join-room", (roomId) => {
+    socket.join(roomId);
+    // const clients = io.sockets.adapter.rooms.get(roomId);
     // const numClients = clients ? clients.size : 0;
 
     // We want to send the list of all the clients to the client
     // after it joins the room
-    const players = io.sockets.adapter.rooms.get(uuid);
+    const players = io.sockets.adapter.rooms.get(roomId);
     if (players)
-      io.in(uuid).emit("players-event", [...players])
+      io.in(roomId).emit("players-event", [...players])
     else
-      throw console.error("No Clients in the room:", uuid);
+      throw console.error("No Clients in the room:", roomId);
+  })
+
+  socket.on("save-name", ({ playerName }) => {
+    playerNameMap.set(socket.id, playerName);
   })
 
   socket.on("start", (roomId) => {
@@ -242,6 +248,10 @@ io.on("connection", (socket) => {
   socket.on("word-selected-to-draw", ({ roomId, word } : { roomId: string, word: string }) => {
     console.log('word-selected-to-draw', word);
     updateValuesInGameState({ word: word }, roomId);
+  })
+
+  socket.on("disconnect", () => {
+    playerNameMap.delete(socket.id);
   })
 });
 

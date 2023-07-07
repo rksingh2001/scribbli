@@ -7,13 +7,13 @@ import useRoomId from '../../store/roomId';
 
 const LandingPage = () => {
   const navigate = useNavigate();
-  const playerName = usePlayer(state => state.playerName);
-  const setPlayerName = usePlayer(state => state.setPlayerName);
+  const playerName = usePlayer(state => state.name);
+  const setName = usePlayer(state => state.setName);
   const socket = useSocket(state => state.socket);
   const setRoomId = useRoomId(state => state.setRoomId);
   
   const handleChange = (e) => {
-    setPlayerName(e.target.value);
+    setName(e.target.value);
   }
 
   const handleNewRoomCreation = () => {
@@ -21,16 +21,22 @@ const LandingPage = () => {
       setRoomId(roomId);
     })
     socket.emit("create-new-room");
+    socket.emit("save-name", { playerName });
     navigate('/NewRoomPage');
+  }
+
+  const handleJoinExistingRoomButton = () => {
+    socket.emit("save-name", { playerName });
+    navigate('/JoinExistingRoomPage');
   }
 
   return (
     <div className="landing-page">
       <div className="name-div">
-        <h3 onChange={handleChange} value={playerName} style={{ fontFamily: "sans-serif", color: "white" }}>Enter your name:</h3>
-        <input />
+        <h3 style={{ fontFamily: "sans-serif", color: "white" }}>Enter your name:</h3>
+        <input onChange={handleChange} value={playerName} />
       </div>
-      <button onClick={() => {navigate('/JoinExistingRoomPage')}}>Join Existing Room</button>
+      <button onClick={handleJoinExistingRoomButton}>Join Existing Room</button>
       <button onClick={handleNewRoomCreation}>Create New Room</button>
     </div>
   )
