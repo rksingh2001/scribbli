@@ -2,12 +2,14 @@ import { useContext, useState, useEffect } from 'react';
 import './ChatWidget.scss';
 import useRoomId from '../../store/roomId';
 import useSocket from '../../store/socket';
+import usePlayerTurnId from '../../store/playerTurnStore';
 
 const ChatWidget = ({ height, width } : { height: number, width: number }) => {
   const [messages, setMessages] = useState([""]);
   const [inputValue, setInputValue] = useState("");
   const socket = useSocket(state => state.socket);
   const roomId = useRoomId(state => state.roomId);
+  const playerTurnId = usePlayerTurnId(state => state.playerTurnId);
 
   useEffect(() => {
     socket.on("recieve-message", ({ senderID, msg }) => {
@@ -21,6 +23,7 @@ const ChatWidget = ({ height, width } : { height: number, width: number }) => {
 
   const handleKeyDown = (e: any) => {
     if (e.key !==  'Enter') return;
+    if (socket.id === playerTurnId) return;
     
     // Emit the Message to rest of the users
     socket.emit("send-message", { roomId: roomId, msg: inputValue });
@@ -37,7 +40,7 @@ const ChatWidget = ({ height, width } : { height: number, width: number }) => {
         })}
       </div>
       <div className='chat-input'>
-        <input onKeyDown={handleKeyDown} onChange={handleChange} value={inputValue} />
+        {socket.id != playerTurnId ? <input onKeyDown={handleKeyDown} onChange={handleChange} value={inputValue} /> : <input disabled />}
       </div>
     </div>
   )
