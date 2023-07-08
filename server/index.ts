@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 import { Server } from 'socket.io';
 import cors from 'cors';
 import http from 'http';
-import { getPlayersList, getRandomSuggestions, sendOnlyToSocketId, sleep } from './utilities';
+import { convertToUnderscores, getPlayersList, getRandomSuggestions, sendOnlyToSocketId, sleep } from './utilities';
 import { suggestions } from './constants';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -26,7 +26,8 @@ type GameStateObjectType = {
   isPlaying: boolean,
   score: ScoreObjectType,
   word?: string,
-  hasGuessedTheWord: hasGuessedTheWord
+  hasGuessedTheWord: hasGuessedTheWord,
+  stopTimer: boolean // stopTimer tells whether to stop the current running timer or not
 }
 
 type GameStateType = Map<string, GameStateObjectType>;
@@ -45,6 +46,7 @@ const initializeGameState = (socketId: string, roomId: string) => {
       isPlaying: false,
       score: { [socketId]: 0 },
       hasGuessedTheWord: { [socketId]: false },
+      stopTimer: false
     };
 
     gameState.set(roomId, newgameStateObj);
@@ -74,6 +76,7 @@ const updateValuesInGameState = (newObj: Partial<GameStateObjectType>, roomId: s
 // Handled the gamestate when the player's turn is changed
 const handlePlayerTurnEnd = (roomId: string) => {
   // Set all the values to false in gameStateObj.hasGuessed
+  // Clear the canvas
 }
 
 export const io = new Server(server, {
@@ -93,6 +96,12 @@ app.get("/", (req, res) => {
 // for those clients respectively.
 const startGame = async (roomName: string) => {
   const visitedPlayers: Set<string> = new Set();
+  const gameStateObj = gameState.get(roomName);
+
+  if (!gameStateObj) {
+    console.error("GAME STATE NOT INITIALIZED YET!!");
+    return;
+  }
 
   // Limited to max 8 iterations so as not to create a lot of garbage memory
   for (let i = 0; i < 8; ++i) {
@@ -132,6 +141,13 @@ const startGame = async (roomName: string) => {
       // This controls the timer on the frontend while selecting
       // any options for drawing
       for (let i = 15; i >= 0; --i) {
+        if (gameStateObj.stopTimer) {
+          updateValuesInGameState({ stopTimer: false }, roomName);
+          io.in(roomName).emit('select-word-timer', { count: 0 });
+          io.in(roomName).emit('drawing-page-timer', { count: 0, message: "Waiting for player to choose a word" });  
+          break;
+        }
+
         io.in(roomName).emit('select-word-timer', { count: i });
         io.in(roomName).emit('drawing-page-timer', { count: i, message: "Waiting for player to choose a word" });
         await sleep(1000);
@@ -139,8 +155,13 @@ const startGame = async (roomName: string) => {
 
       // Player turn to draw now
       for (let i = 60; i >= 0; --i) {
-        io.in(roomName).except(playerSocketId).emit('drawing-page-timer', { count: i, message: "Player is drawing, guess what it is" });
-        sendOnlyToSocketId(playerSocketId, 'drawing-page-timer', { count: i, message: "Your turn to draw" });
+        if (gameStateObj.stopTimer) {
+          updateValuesInGameState({ stopTimer: false }, roomName);
+          break;
+        }
+
+        io.in(roomName).except(playerSocketId).emit('drawing-page-timer', { count: i, message: "Player is drawing, guess what it is " + convertToUnderscores(gameStateObj.word) });
+        sendOnlyToSocketId(playerSocketId, 'drawing-page-timer', { count: i, message: "Your turn to draw " + gameStateObj.word });
         await sleep(1000);
       }
 
@@ -246,7 +267,7 @@ io.on("connection", (socket) => {
 
   socket.on("word-selected-to-draw", ({ roomId, word } : { roomId: string, word: string }) => {
     console.log('word-selected-to-draw', word);
-    updateValuesInGameState({ word: word }, roomId);
+    updateValuesInGameState({ word: word, stopTimer: true }, roomId);
   })
 
   socket.on("disconnect", () => {

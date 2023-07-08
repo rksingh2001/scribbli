@@ -53,3 +53,17 @@ export const getPlayersList = (roomId: string) => {
     return [];
   }
 }
+
+export const convertToUnderscores = (inputString: string | undefined) => {
+  if (!inputString) return "";
+
+  let underscoreString = "";
+  for (let char of inputString) {
+    if (char === " ") {
+      underscoreString += " ";
+    } else {
+      underscoreString += "_ ";
+    }
+  }
+  return underscoreString;
+}
