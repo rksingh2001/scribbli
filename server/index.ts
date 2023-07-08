@@ -213,7 +213,13 @@ io.on("connection", (socket) => {
     const socketID = socket.id;
     console.log("mess", roomId, msg);
     matchStringAndUpdateScore(roomId, msg, socketID);
-    io.to(roomId).emit("recieve-message", { senderID: socketID, msg: msg });
+
+    if (msg.toLowerCase() === gameState.get(roomId)?.word?.toLowerCase()) {
+      const message = playerNameMap.get(socketID) + " has guessed the correct word ✅";
+      io.to(roomId).emit("recieve-message", { senderID: socketID, msg: message });
+    } else {
+      io.to(roomId).emit("recieve-message", { senderID: socketID, msg: msg });
+    }
   })
 
   socket.on("create-new-room", () => {
