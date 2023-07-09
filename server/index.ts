@@ -75,8 +75,22 @@ const updateValuesInGameState = (newObj: Partial<GameStateObjectType>, roomId: s
 
 // Handled the gamestate when the player's turn is changed
 const handlePlayerTurnEnd = (roomId: string) => {
+  const gameStateObj = gameState.get(roomId);
+
+  if (!gameStateObj) {
+    console.error("Game State Object doesn't exist");
+    return;
+  }
+
   // Set all the values to false in gameStateObj.hasGuessed
+  Object.keys(gameStateObj.hasGuessedTheWord).map(key => {
+    gameStateObj.hasGuessedTheWord[key] = false;
+  })
+
+  gameStateObj.word = undefined;
+
   // Clear the canvas
+  io.in(roomId).emit('clear-canvas', {});
 }
 
 export const io = new Server(server, {
@@ -166,8 +180,8 @@ const startGame = async (roomName: string) => {
       }
 
       visitedPlayers.add(playerSocketId);
+      
       // End of player's turn in a round
-
       handlePlayerTurnEnd(roomName);
     } else {
       // This means that this round is now over

@@ -22,11 +22,15 @@ const Canvas = ({ height, width, disable } : {height: number, width: number, dis
     socket.on("mouse-up", (data) => {
       stopPainting();
     })
-  }, [socket])
-  
+
+    socket.on("clear-canvas", (data) => {
+      clearCanvas();
+    })
+  }, [socket]);
+
   const draw = (pos : { posX : string, posY : string}) => {
     const context = canvasRef.current?.getContext('2d');
-
+    
     if (context) {
       context.lineWidth = 10;
       context.lineCap = "round";
@@ -42,7 +46,17 @@ const Canvas = ({ height, width, disable } : {height: number, width: number, dis
       context.beginPath();
       context.moveTo(parseFloat(pos.posX), parseFloat(pos.posY));
     } else {
-      throw console.error("Canvas context not found.");
+      throw new Error("Canvas context not found.");
+    }
+  }
+
+  const clearCanvas = () => { 
+    const context = canvasRef.current?.getContext('2d');
+
+    if (context) {
+      context.clearRect(0, 0, width, height);
+    } else {
+      throw new Error("Canvas context not found.");
     }
   }
   
