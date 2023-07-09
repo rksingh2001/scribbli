@@ -2,21 +2,22 @@ import "./ScoreWidget.scss";
 import { useEffect, useState } from "react";
 import usePlayerList from "../../store/playerList";
 import useSocket from "../../store/socket";
+import { getPlayerNameFromList } from "../../helpers/utilities";
 
 const ScoreWidget = ({ width, height } : { width: number, height: number }) => {
   const playerList = usePlayerList(state => state.playerList);
   const socket = useSocket(state => state.socket);
-
+  
   type ScoreObjectType = {
     [key: string]: number
   }
-
+  
   const initialScoreObj: ScoreObjectType = {};
-
+  
   playerList.forEach(({ playerId }) => {
     initialScoreObj[playerId] = 0;
   });
-
+  
   // Initial Score Object is all the player with ids and score equal to zero
   const [score, setScore] = useState(initialScoreObj);
 
@@ -27,15 +28,7 @@ const ScoreWidget = ({ width, height } : { width: number, height: number }) => {
     })
   }, []);
 
-  const getPlayerNameFromList = (socketId: string) => {
-    for (let i = 0; i < playerList.length; ++i) {
-      const playerObj = playerList[i];
-      if (playerObj.playerId === socketId) {
-        return playerObj.playerName;
-      }
-    }
-    return "Name Not Found";
-  }
+  console.log("This is score", score)
   
   return (
     <div 

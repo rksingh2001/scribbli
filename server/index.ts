@@ -200,7 +200,7 @@ const startGame = async (roomName: string) => {
     visitedPlayers.clear();
   }
 
-  console.log("Round Ended!!!");
+  io.in(roomName).emit("game-end", { score: gameStateObj.score });
   return;
 }
 
@@ -262,6 +262,15 @@ io.on("connection", (socket) => {
     const roomId = uuidv4();
     socket.join(roomId);
     socket.emit("room-id", { roomId: roomId });
+
+    // Todo: Add a listener for players-event which is common for
+    // the app and isn't binded to any component, so that we
+    // can update the number of players any time, and do not need
+    // to use such hacks
+    setTimeout(() => {
+      const players = getPlayersList(roomId);
+      io.in(roomId).emit("players-event", players);
+    }, 200);
   })
 
   socket.on("join-room", (roomId) => {
@@ -274,7 +283,7 @@ io.on("connection", (socket) => {
     // const players = io.sockets.adapter.rooms.get(roomId);
 
     const players = getPlayersList(roomId);
-    io.in(roomId).emit("players-event", players)
+    io.in(roomId).emit("players-event", players);
   })
 
   socket.on("save-name", ({ playerName }) => {

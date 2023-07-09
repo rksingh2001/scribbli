@@ -1,0 +1,12 @@
+.scores {
+  display: flex;
+  justify-content: top;
+  align-items: center;
+  flex-direction: column;
+  height: 50vh;
+
+  div {
+    color: white;
+    font-size: 30px;
+  }
+}
