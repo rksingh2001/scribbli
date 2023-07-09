@@ -17,6 +17,8 @@ const DrawingPage = () => {
   const setPlayerTurnId = usePlayerTurnId((state) => state.setPlayerTurnId);
   const [isDisabled, setIsDisabled] = useGameState(state => [state.isDisabled, state.setIsDisabled]);
   const isTimer = useGameState(state => state.isTimer);
+  const round = useGameState(state => state.round);
+  const setRound = useGameState(state => state.setRound);
   
   useEffect(() => {
     if (socketID === playerTurnId) {
@@ -25,6 +27,7 @@ const DrawingPage = () => {
 
     socket.on("change-player-turn", (data) => {
       setPlayerTurnId(data.playerTurn);
+      setRound(data.currentRound);
 
       if (socketID === data.playerTurn) {
         setIsDisabled(true);
@@ -46,6 +49,7 @@ const DrawingPage = () => {
 
   return (
     <div className="drawing-page">
+      <div style={{ color: "white", fontSize: "larger" }} className="flexbox">Round: {round}</div>
       <div><DrawingPageTimer /></div>
       { isTimer ? <SelectWordTimer /> : null }
       <div style={{ display: 'flex', justifyContent: 'space-evenly', alignItems: 'center', flexDirection: 'row'}}>

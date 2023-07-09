@@ -10,11 +10,18 @@
 
     font-size: 30px;
 
-    div {
-        width: 100%;
-
+    .select-rounds {
         display: flex;
-        justify-content: center;
+        justify-content: space-around;
         align-items: center;
+        width: 300px;
+        margin-top: 20px;
+
+        select {
+            color: purple;
+            background-color: white;
+            height: 30px;
+            border: 0px;
+        }
     }
 }

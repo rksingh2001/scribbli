@@ -4,7 +4,7 @@ import { Server } from 'socket.io';
 import cors from 'cors';
 import http from 'http';
 import { convertToUnderscores, getPlayersList, getRandomSuggestions, sendOnlyToSocketId, sleep } from './utilities';
-import { suggestions } from './constants';
+import { ROUND_TIME_SECONDS, suggestions } from './constants';
 import { v4 as uuidv4 } from 'uuid';
 
 dotenv.config();
@@ -28,6 +28,7 @@ type GameStateObjectType = {
   word?: string, // Stores the word the player has selected
   hasGuessedTheWord: hasGuessedTheWord, // Stores a boolean for each player and tells if the players has guessed the word or not.
   stopTimer: boolean // stopTimer tells whether to stop the current running timer or not
+  numOfRounds: number // Number of rounds chosen for the game
 }
 
 type GameStateType = Map<string, GameStateObjectType>;
@@ -46,7 +47,8 @@ const initializeGameState = (socketId: string, roomId: string) => {
       isPlaying: false,
       score: { [socketId]: 0 },
       hasGuessedTheWord: { [socketId]: false },
-      stopTimer: false
+      stopTimer: false,
+      numOfRounds: 3,
     };
 
     gameState.set(roomId, newgameStateObj);
@@ -117,76 +119,84 @@ const startGame = async (roomName: string) => {
     return;
   }
 
-  // Limited to max 8 iterations so as not to create a lot of garbage memory
-  for (let i = 0; i < 8; ++i) {
-    const room = io?.sockets?.adapter?.rooms?.get(roomName) ?? "";
-    if (!room) {
-      console.error("Room doesn't exist");
-      return;
-    }
+  for (let currentRound = 1; currentRound <= gameStateObj.numOfRounds; ++currentRound) {
+    console.log("ROUND BEGAN", currentRound);
+    // Limited to max 8 iterations so as not to create a lot of garbage memory
+    for (let i = 0; i < 8; ++i) {
+      const room = io?.sockets?.adapter?.rooms?.get(roomName) ?? "";
+      if (!room) {
+        console.error("Room doesn't exist");
+        return;
+      }
+  
+      let playerSocketId = "";
+  
+      for (const socketId of room) {
+        if (!visitedPlayers.has(socketId)) {
+          playerSocketId = socketId;
+          break;
+        }
+      }
+  
+      if (playerSocketId !== "")  {
+        console.log("i: " + i);
+        // Assign a player turn
+        if (i === 0 && currentRound === 1) {
+          io.in(roomName).emit("start", {
+            playerTurn: playerSocketId,
+            currentRound: currentRound
+          });
+        } else {
+          io.in(roomName).emit("change-player-turn", {
+            playerTurn: playerSocketId,
+            currentRound: currentRound
+          })
+        }
 
-    let playerSocketId = "";
+        console.log("REACHED HEREJWQNDNW", i);
 
-    for (const socketId of room) {
-      if (!visitedPlayers.has(socketId)) {
-        playerSocketId = socketId;
+        // Start of player's turn in a round
+        const randomSuggestions = getRandomSuggestions(3, suggestions);
+        sendOnlyToSocketId(playerSocketId, "random-suggestions", { randomSuggestions: randomSuggestions });
+        
+        // This controls the timer on the frontend while selecting
+        // any options for drawing
+        for (let i = 15; i >= 0; --i) {
+          if (gameStateObj.stopTimer) {
+            updateValuesInGameState({ stopTimer: false }, roomName);
+            io.in(roomName).emit('select-word-timer', { count: 0 });
+            io.in(roomName).emit('drawing-page-timer', { count: 0, message: "Waiting for player to choose a word" });  
+            break;
+          }
+  
+          io.in(roomName).emit('select-word-timer', { count: i });
+          io.in(roomName).emit('drawing-page-timer', { count: i, message: "Waiting for player to choose a word" });
+          await sleep(1000);
+        }
+  
+        // Player turn to draw now
+        for (let i = ROUND_TIME_SECONDS; i >= 0; --i) {
+          if (gameStateObj.stopTimer) {
+            updateValuesInGameState({ stopTimer: false }, roomName);
+            break;
+          }
+  
+          io.in(roomName).except(playerSocketId).emit('drawing-page-timer', { count: i, message: "Player is drawing, guess what it is " + convertToUnderscores(gameStateObj.word) });
+          sendOnlyToSocketId(playerSocketId, 'drawing-page-timer', { count: i, message: "Your turn to draw " + gameStateObj.word });
+          await sleep(1000);
+        }
+  
+        visitedPlayers.add(playerSocketId);
+  
+        // End of player's turn in a round
+        handlePlayerTurnEnd(roomName);
+      } else {
+        // This means that this round is now over
         break;
       }
     }
 
-    if (playerSocketId !== "")  {
-      console.log("i: " + i);
-      // Assign a player turn
-      if (i === 0) {
-        io.in(roomName).emit("start", {
-          playerTurn: playerSocketId,
-          
-        });
-      } else {
-        io.in(roomName).emit("change-player-turn", {
-          playerTurn: playerSocketId,
-        })
-      }
-      
-      // Start of player's turn in a round
-      const randomSuggestions = getRandomSuggestions(3, suggestions);
-      sendOnlyToSocketId(playerSocketId, "random-suggestions", { randomSuggestions: randomSuggestions });
-      
-      // This controls the timer on the frontend while selecting
-      // any options for drawing
-      for (let i = 15; i >= 0; --i) {
-        if (gameStateObj.stopTimer) {
-          updateValuesInGameState({ stopTimer: false }, roomName);
-          io.in(roomName).emit('select-word-timer', { count: 0 });
-          io.in(roomName).emit('drawing-page-timer', { count: 0, message: "Waiting for player to choose a word" });  
-          break;
-        }
-
-        io.in(roomName).emit('select-word-timer', { count: i });
-        io.in(roomName).emit('drawing-page-timer', { count: i, message: "Waiting for player to choose a word" });
-        await sleep(1000);
-      }
-
-      // Player turn to draw now
-      for (let i = 60; i >= 0; --i) {
-        if (gameStateObj.stopTimer) {
-          updateValuesInGameState({ stopTimer: false }, roomName);
-          break;
-        }
-
-        io.in(roomName).except(playerSocketId).emit('drawing-page-timer', { count: i, message: "Player is drawing, guess what it is " + convertToUnderscores(gameStateObj.word) });
-        sendOnlyToSocketId(playerSocketId, 'drawing-page-timer', { count: i, message: "Your turn to draw " + gameStateObj.word });
-        await sleep(1000);
-      }
-
-      visitedPlayers.add(playerSocketId);
-
-      // End of player's turn in a round
-      handlePlayerTurnEnd(roomName);
-    } else {
-      // This means that this round is now over
-      break;
-    }
+    visitedPlayers.clear();
   }
 
   console.log("Round Ended!!!");
@@ -262,10 +272,10 @@ io.on("connection", (socket) => {
     playerNameMap.set(socket.id, playerName);
   })
 
-  socket.on("start", (roomId) => {
+  socket.on("start", ({ roomId, numOfRounds }) => {
     console.log("roomId1", roomId);
     initializeGameState(socket.id, roomId);
-    updateValuesInGameState({ isPlaying: true }, roomId);
+    updateValuesInGameState({ isPlaying: true, numOfRounds: numOfRounds }, roomId);
     startGame(roomId);
   })
 

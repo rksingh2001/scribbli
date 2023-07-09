@@ -1,3 +1,5 @@
+export const ROUND_TIME_SECONDS = 10;
+
 export const suggestions = [
   "Apple",
   "Banana",

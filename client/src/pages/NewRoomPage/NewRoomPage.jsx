@@ -6,6 +6,7 @@ import usePlayerTurnId from '../../store/playerTurnStore';
 import usePlayerList from '../../store/playerList';
 import useRoomId from '../../store/roomId';
 import useSocket from '../../store/socket';
+import useGameState from '../../store/gameState';
 
 const NewRoomPage = () => {
   const socket = useSocket(state => state.socket);
@@ -15,15 +16,18 @@ const NewRoomPage = () => {
   const setPlayerTurnId = usePlayerTurnId((state) => state.setPlayerTurnId);
   const playerList = usePlayerList(state => state.playerList);
   const setPlayerList = usePlayerList(state => state.setPlayerList);
+  const setRound = useGameState(state => state.setRound);
+  const [numOfRounds, selectNumOfRounds] = useState("3");
 
-  console.log("setPlayerTurnId", setPlayerTurnId);
-  console.log(playerList);
+  // console.log("setPlayerTurnId", setPlayerTurnId);
+  // console.log(playerList);
 
   useEffect(() => {
     setPlayerList([socketID]);
 
     socket.on("start", (data) => {
       setPlayerTurnId(data.playerTurn);
+      setRound(data.currentRound)
       console.log("start", data.playerTurn);
       navigate("/DrawingPage");
     })
@@ -34,16 +38,30 @@ const NewRoomPage = () => {
   }, [])
 
   const handleStart = () => {
-    socket.emit("start", roomId);
+    socket.emit("start", { roomId, numOfRounds });
     navigate("/DrawingPage")
+  }
+
+  const handleSelect = (e) => {
+    selectNumOfRounds(e.target.value);
   }
 
   return (
     <div className="new-room-page">
-      <div>Players in Room: {playerList.length}</div>
-      <div>New Room Unique ID : {roomId}</div>
-      <div>Copy the ID</div>
-      <div>Waiting for users to join...</div>
+      <div className="flexbox">Players in Room: {playerList.length}</div>
+      <div className="flexbox">New Room Unique ID : {roomId}</div>
+      <div className="flexbox">Copy the ID</div>
+      <div className="flexbox">Waiting for users to join...</div>
+      <div className='select-rounds'>
+        <h6 style={{ fontFamily: "sans-serif", color: "white" }}>Number of Rounds:</h6>
+        <select onChange={handleSelect}>
+          <option>1</option>
+          <option selected>3</option>
+          <option>5</option>
+          <option>7</option>
+          <option>10</option>
+        </select>
+      </div>
       <button onClick={handleStart}>Start</button>
     </div>
   )

@@ -9,6 +9,8 @@ type GameStateType = {
   setRandomSuggestions: Function,
   wordToDraw: string,
   setWordToDraw: Function,
+  round: number,
+  setRound: Function,
 }
 
 const useGameState = create<GameStateType>(set => ({
@@ -19,7 +21,9 @@ const useGameState = create<GameStateType>(set => ({
   randomSuggestions: [],
   setRandomSuggestions: (suggestions: string[]) => set(() => ({ randomSuggestions: suggestions })),
   wordToDraw: "",
-  setWordToDraw: (word: string) => set(() => ({wordToDraw: word })),
+  setWordToDraw: (word: string) => set(() => ({ wordToDraw: word })),
+  round: 1,
+  setRound: (round: number) => set(() => ({ round: round }))
 }))
 
 export default useGameState;

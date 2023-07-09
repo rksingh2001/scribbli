@@ -1,0 +1,16 @@
+body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden;
+    color: black;
+    background-color: purple;
+}
+
+flexbox {
+    width: 100%;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
