@@ -42,10 +42,16 @@ const safeAssign: <T>(target: T, ...sources: Partial<T>[]) => T = Object.assign
 const initializeGameState = (socketId: string, roomId: string) => {
   const gameStateObj = gameState.get(roomId);
 
+  const playersList = getPlayersList(roomId);
+  const scoreObj : ScoreObjectType = {};
+  playersList.forEach(({ playerId }) => {
+    scoreObj[playerId] = 0;
+  })
+
   if (!gameStateObj) {
     const newgameStateObj: GameStateObjectType = {
       isPlaying: false,
-      score: { [socketId]: 0 },
+      score: scoreObj,
       hasGuessedTheWord: { [socketId]: false },
       stopTimer: false,
       numOfRounds: 3,
@@ -69,8 +75,6 @@ const updateValuesInGameState = (newObj: Partial<GameStateObjectType>, roomId: s
   }
 
   safeAssign(gameStateObj, newObj);
-
-  console.log(gameState.get(roomId));
 
   return;
 }
@@ -139,7 +143,6 @@ const startGame = async (roomName: string) => {
       }
   
       if (playerSocketId !== "")  {
-        console.log("i: " + i);
         // Assign a player turn
         if (i === 0 && currentRound === 1) {
           io.in(roomName).emit("start", {
@@ -152,8 +155,6 @@ const startGame = async (roomName: string) => {
             currentRound: currentRound
           })
         }
-
-        console.log("REACHED HEREJWQNDNW", i);
 
         // Start of player's turn in a round
         const randomSuggestions = getRandomSuggestions(3, suggestions);
@@ -231,7 +232,7 @@ const matchStringAndUpdateScore = (roomId: string, message: string, socketId: st
   Object.values(gameStateObj.hasGuessedTheWord).map(hasGuessed => {
     if (hasGuessed) count ++;
   })
-  if (count >= Object.values(gameStateObj.hasGuessedTheWord).length-1) {
+  if (count >= getPlayersList(roomId).length-1) {
     gameStateObj.stopTimer = true;
   }
 
@@ -244,7 +245,6 @@ io.on("connection", (socket) => {
 
   socket.on("send-message", ({ roomId, msg }) => {
     const socketID = socket.id;
-    console.log("mess", roomId, msg);
     matchStringAndUpdateScore(roomId, msg, socketID);
 
     if (msg.toLowerCase() === gameState.get(roomId)?.word?.toLowerCase()) {
@@ -282,7 +282,6 @@ io.on("connection", (socket) => {
   })
 
   socket.on("start", ({ roomId, numOfRounds }) => {
-    console.log("roomId1", roomId);
     initializeGameState(socket.id, roomId);
     updateValuesInGameState({ isPlaying: true, numOfRounds: numOfRounds }, roomId);
     startGame(roomId);
