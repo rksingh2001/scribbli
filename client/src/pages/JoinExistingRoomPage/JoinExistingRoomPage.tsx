@@ -23,7 +23,7 @@ const JoinExistingRoomPage = () => {
     })
   }, [])
 
-  const handleChange = (e) => {
+  const handleChange = (e: any) => {
     setRoomId(e.target.value);
   }
 

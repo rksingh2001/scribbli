@@ -25,7 +25,7 @@ const SuggestionsOverlay = () => {
     })
   }, []);
 
-  const handleClick = (suggestion) => {
+  const handleClick = (suggestion: string) => {
     socket.emit('word-selected-to-draw', { word: suggestion, roomId: roomId });
     setWordToDraw(suggestion);
   }

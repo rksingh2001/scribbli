@@ -42,7 +42,7 @@ const NewRoomPage = () => {
     navigate("/DrawingPage")
   }
 
-  const handleSelect = (e) => {
+  const handleSelect = (e: any) => {
     selectNumOfRounds(e.target.value);
   }
 

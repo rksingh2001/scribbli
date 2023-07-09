@@ -12,7 +12,7 @@ const LandingPage = () => {
   const socket = useSocket(state => state.socket);
   const setRoomId = useRoomId(state => state.setRoomId);
   
-  const handleChange = (e) => {
+  const handleChange = (e: any) => {
     setName(e.target.value);
   }
 
