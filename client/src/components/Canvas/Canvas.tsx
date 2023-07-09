@@ -144,7 +144,6 @@ const Canvas = ({ height, width, disable } : {height: number, width: number, dis
     }
   }
 
-
   return (
     disable ?
     <canvas

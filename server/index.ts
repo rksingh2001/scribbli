@@ -226,6 +226,15 @@ const matchStringAndUpdateScore = (roomId: string, message: string, socketId: st
     gameStateObj.score[socketId] = 10;
   }
 
+  // Stops the loop currently running in case all the guesses were made correctly
+  let count = 0;
+  Object.values(gameStateObj.hasGuessedTheWord).map(hasGuessed => {
+    if (hasGuessed) count ++;
+  })
+  if (count >= Object.values(gameStateObj.hasGuessedTheWord).length-1) {
+    gameStateObj.stopTimer = true;
+  }
+
   console.log("gameStateObj", gameStateObj.score);
   io.in(roomId).emit("score-updation", gameStateObj.score);
 }

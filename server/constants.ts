@@ -1,4 +1,4 @@
-export const ROUND_TIME_SECONDS = 10;
+export const ROUND_TIME_SECONDS = 15;
 
 export const suggestions = [
   "Apple",
