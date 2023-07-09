@@ -23,10 +23,10 @@ type hasGuessedTheWord = {
 }
 
 type GameStateObjectType = {
-  isPlaying: boolean,
-  score: ScoreObjectType,
-  word?: string,
-  hasGuessedTheWord: hasGuessedTheWord,
+  isPlaying: boolean, // Tells whether the game has begun or not
+  score: ScoreObjectType, // Stores the score of each player in a key value pair
+  word?: string, // Stores the word the player has selected
+  hasGuessedTheWord: hasGuessedTheWord, // Stores a boolean for each player and tells if the players has guessed the word or not.
   stopTimer: boolean // stopTimer tells whether to stop the current running timer or not
 }
 
@@ -180,7 +180,7 @@ const startGame = async (roomName: string) => {
       }
 
       visitedPlayers.add(playerSocketId);
-      
+
       // End of player's turn in a round
       handlePlayerTurnEnd(roomName);
     } else {
