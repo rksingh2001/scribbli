@@ -2,7 +2,7 @@ import "./ScoreWidget.scss";
 import { useEffect, useState } from "react";
 import usePlayerList from "../../store/playerList";
 import useSocket from "../../store/socket";
-import { getPlayerNameFromList } from "../../helpers/utilities";
+import { getPlayerNameFromList, getSortedScoreArray } from "../../helpers/utilities";
 
 const ScoreWidget = ({ width, height } : { width: number, height: number }) => {
   const playerList = usePlayerList(state => state.playerList);
@@ -36,13 +36,15 @@ const ScoreWidget = ({ width, height } : { width: number, height: number }) => {
       style={{ width: width, height: height }}
     >
       {
-        Object.entries(score).map(([key, value]) => (
-          <div className="score-widget-player" key={key}>
-            <div className="score-widget-player-name">{getPlayerNameFromList(key)}</div>
-            :
-            <div className="score-widget-player-score">{value}</div>
-          </div>
-        ))
+        getSortedScoreArray(score).map(sc => {
+          return (
+            <div className="score-widget-player" key={sc[0]}>
+              <div className="score-widget-player-name">{getPlayerNameFromList(sc[0])}</div>
+              :
+              <div className="score-widget-player-score">{sc[1]}</div>
+            </div>
+          )
+        })
       }
     </div>
   )
