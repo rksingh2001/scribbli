@@ -158,6 +158,7 @@ const startGame = async (roomName: string) => {
 
         // Start of player's turn in a round
         const randomSuggestions = getRandomSuggestions(3, suggestions);
+        updateValuesInGameState({ word: randomSuggestions[0] }, roomName); // Sets a default word in case no word is selected
         sendOnlyToSocketId(playerSocketId, "random-suggestions", { randomSuggestions: randomSuggestions });
         
         // This controls the timer on the frontend while selecting
