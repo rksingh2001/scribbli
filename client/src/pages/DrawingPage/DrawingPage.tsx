@@ -1,6 +1,7 @@
 import { useContext, useEffect, useState } from "react";
 import Canvas from "../../components/Canvas/Canvas";
 import ChatWidget from "../../components/ChatWidget/ChatWidget";
+import ColorWidget from "../../components/ColorWidget/ColorWidget";
 import DrawingPageTimer from "../../components/DrawingPageTimer/DrawingPageTimer";
 import GameEndOverlay from "../../components/GameEndOverlay/GameEndOverlay";
 import ScoreWidget from "../../components/ScoreWidget/ScoreWidget";
@@ -71,6 +72,9 @@ const DrawingPage = () => {
         <ScoreWidget width={250} height={500} />
         <Canvas width={800} height={500} disable={isDisabled} />
         <ChatWidget width={250} height={500} />
+      </div>
+      <div className="flexbox">
+        <ColorWidget width={400} height={80} />
       </div>
     </div>
   )

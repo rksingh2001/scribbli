@@ -3,16 +3,18 @@ import "./Canvas.css";
 import { useState, useEffect, useRef, MouseEventHandler, useContext } from "react";
 import useRoomId from "../../store/roomId";
 import useSocket from "../../store/socket";
+import useCanvasState from "../../store/canvasState";
 
 const Canvas = ({ height, width, disable } : {height: number, width: number, disable: boolean}) => {
   const [isPainting, setIsPainting] = useState(false);
   const roomId = useRoomId(state => state.roomId);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const socket = useSocket(state => state.socket);
+  const color = useCanvasState(state => state.color);
 
   useEffect(() => {
-    socket.on("recieve_message", (data) => {
-      draw(data);
+    socket.on("recieve_message", ({ pos, color }) => {
+      draw(pos, color);
     })
 
     socket.on("mouse-down", (data) => {
@@ -28,13 +30,13 @@ const Canvas = ({ height, width, disable } : {height: number, width: number, dis
     })
   }, [socket]);
 
-  const draw = (pos : { posX : string, posY : string}) => {
+  const draw = (pos : { posX : string, posY : string}, color: string) => {
     const context = canvasRef.current?.getContext('2d');
     
     if (context) {
       context.lineWidth = 10;
       context.lineCap = "round";
-      context.strokeStyle = "purple";
+      context.strokeStyle = color;
       
       if (canvasRef.current === null) {
         console.error("Error: CanvasRef.current is null");
@@ -68,7 +70,7 @@ const Canvas = ({ height, width, disable } : {height: number, width: number, dis
     if (context) {
       context.lineWidth = 10;
       context.lineCap = "round";
-      context.strokeStyle = "purple";
+      context.strokeStyle = color;
       
       if (canvasRef.current === null) {
         console.error("Error: CanvasRef.current is null");
@@ -109,7 +111,7 @@ const Canvas = ({ height, width, disable } : {height: number, width: number, dis
         const pos = { posX, posY }
         
         // We can transfer the data
-        socket.emit("send_coordinates", { roomId, pos });
+        socket.emit("send_coordinates", { roomId, pos, color });
       }
     } else {
       throw console.error("Context Not Found");
