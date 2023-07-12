@@ -23,12 +23,13 @@ type hasGuessedTheWord = {
 }
 
 type GameStateObjectType = {
-  isPlaying: boolean, // Tells whether the game has begun or not
-  score: ScoreObjectType, // Stores the score of each player in a key value pair
-  word?: string, // Stores the word the player has selected
-  hasGuessedTheWord: hasGuessedTheWord, // Stores a boolean for each player and tells if the players has guessed the word or not.
+  isPlaying: boolean // Tells whether the game has begun or not
+  score: ScoreObjectType // Stores the score of each player in a key value pair
+  word?: string // Stores the word the player has selected
+  hasGuessedTheWord: hasGuessedTheWord // Stores a boolean for each player and tells if the players has guessed the word or not.
   stopTimer: boolean // stopTimer tells whether to stop the current running timer or not
   numOfRounds: number // Number of rounds chosen for the game
+  playerTurn: string | undefined // Player who is playing at the current moment
 }
 
 type GameStateType = Map<string, GameStateObjectType>;
@@ -55,6 +56,7 @@ const initializeGameState = (socketId: string, roomId: string) => {
       hasGuessedTheWord: { [socketId]: false },
       stopTimer: false,
       numOfRounds: 3,
+      playerTurn: undefined
     };
 
     gameState.set(roomId, newgameStateObj);
@@ -145,11 +147,13 @@ const startGame = async (roomName: string) => {
       if (playerSocketId !== "")  {
         // Assign a player turn
         if (i === 0 && currentRound === 1) {
+          updateValuesInGameState({ playerTurn: playerSocketId }, roomName);
           io.in(roomName).emit("start", {
             playerTurn: playerSocketId,
             currentRound: currentRound
           });
         } else {
+          updateValuesInGameState({ playerTurn: playerSocketId }, roomName);
           io.in(roomName).emit("change-player-turn", {
             playerTurn: playerSocketId,
             currentRound: currentRound
@@ -208,7 +212,7 @@ const startGame = async (roomName: string) => {
 const matchStringAndUpdateScore = (roomId: string, message: string, socketId: string) => {
   const gameStateObj =  gameState.get(roomId);
 
-  if (!gameStateObj || !gameStateObj.word) {
+  if (!gameStateObj || !gameStateObj.word || !gameStateObj.playerTurn) {
     // Word hasn't been selected or game doesn't exist
     return;
   }
@@ -216,24 +220,55 @@ const matchStringAndUpdateScore = (roomId: string, message: string, socketId: st
   if (message.toLowerCase() !== gameStateObj.word.toLowerCase() || gameStateObj.hasGuessedTheWord[socketId]) {
     return;
   }
-  
-  gameStateObj.hasGuessedTheWord[socketId] = true;
 
+  // Note: We haven't added the current player who have guessed into the hasGuessedTheWord Object
+  let numOfPlayersWhoGuessed = 0;
+  Object.values(gameStateObj.hasGuessedTheWord).forEach(hasGuessed => { if (hasGuessed) numOfPlayersWhoGuessed++ });
+  
   // String has matched, we should update the score
   // and the message should have way to show that the word has matched
-  const curr_score = gameStateObj.score[socketId]
-  if (curr_score) {
-    gameStateObj.score[socketId] = curr_score + 10;
+  let scoreToAddToGuesser = 50;
+  let scoreToAddToDrawer = 0;
+  if (numOfPlayersWhoGuessed === 0) {
+    scoreToAddToGuesser = 150;
+    scoreToAddToDrawer = 100;
+  } else if (numOfPlayersWhoGuessed === 1) {
+    scoreToAddToGuesser = 125;
+    scoreToAddToDrawer = 25;
+  } else if (numOfPlayersWhoGuessed === 2) {
+    scoreToAddToGuesser = 100;
+    scoreToAddToDrawer = 25;
+  } else if (numOfPlayersWhoGuessed === 3) {
+    scoreToAddToGuesser = 75;
+    scoreToAddToDrawer = 25;
+  } else if (numOfPlayersWhoGuessed === 4) {
+    scoreToAddToDrawer = 25;
+  }
+  
+  
+  const currScore = gameStateObj.score[socketId];
+  if (currScore) {
+    gameStateObj.score[socketId] = currScore + scoreToAddToGuesser;
   } else {
-    gameStateObj.score[socketId] = 10;
+    gameStateObj.score[socketId] = scoreToAddToGuesser;
   }
 
+  const playerDrawingId = gameStateObj.playerTurn;
+  const drawerScore = gameStateObj.score[playerDrawingId]
+  if (drawerScore) {
+    gameStateObj.score[playerDrawingId] = drawerScore + scoreToAddToDrawer;
+  } else {
+    gameStateObj.score[playerDrawingId] = drawerScore + scoreToAddToDrawer;
+  }
+
+  gameStateObj.hasGuessedTheWord[socketId] = true;
+  
   // Stops the loop currently running in case all the guesses were made correctly
-  let count = 0;
-  Object.values(gameStateObj.hasGuessedTheWord).map(hasGuessed => {
-    if (hasGuessed) count ++;
-  })
-  if (count >= getPlayersList(roomId).length-1) {
+  // let count = 0;
+  // Object.values(gameStateObj.hasGuessedTheWord).map(hasGuessed => {
+  //   if (hasGuessed) count ++;
+  // })
+  if (numOfPlayersWhoGuessed >= getPlayersList(roomId).length-2) {
     gameStateObj.stopTimer = true;
   }
 
@@ -297,10 +332,10 @@ io.on("connection", (socket) => {
     startGame(roomId);
   })
 
-  socket.on("send_coordinates", ({ roomId, pos }) => {
+  socket.on("send_coordinates", ({ roomId, pos, color }) => {
     // Sends the message to all the clients
     // except the one it recieved it from
-    io.to(roomId).emit("recieve_message", pos);
+    io.to(roomId).emit("recieve_message", { pos, color });
   })
 
   socket.on("mouse-down", ({ roomId }) => {
