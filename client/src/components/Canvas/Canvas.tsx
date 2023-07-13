@@ -1,6 +1,6 @@
 import "./Canvas.css";
 
-import { useState, useEffect, useRef, MouseEventHandler, useContext } from "react";
+import { useState, useEffect, useRef, MouseEventHandler } from "react";
 import useRoomId from "../../store/roomId";
 import useSocket from "../../store/socket";
 import useCanvasState from "../../store/canvasState";
@@ -11,10 +11,11 @@ const Canvas = ({ height, width, disable } : {height: number, width: number, dis
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const socket = useSocket(state => state.socket);
   const color = useCanvasState(state => state.color);
+  const lineWidth = useCanvasState(state => state.lineWidth);
 
   useEffect(() => {
-    socket.on("recieve_message", ({ pos, color }) => {
-      draw(pos, color);
+    socket.on("recieve_message", ({ pos, color, lineWidth }) => {
+      draw(pos, color, lineWidth);
     })
 
     socket.on("mouse-down", (data) => {
@@ -30,11 +31,11 @@ const Canvas = ({ height, width, disable } : {height: number, width: number, dis
     })
   }, [socket]);
 
-  const draw = (pos : { posX : string, posY : string}, color: string) => {
+  const draw = (pos : { posX : string, posY : string}, color: string, lineWidth: number) => {
     const context = canvasRef.current?.getContext('2d');
     
     if (context) {
-      context.lineWidth = 10;
+      context.lineWidth = lineWidth;
       context.lineCap = "round";
       context.strokeStyle = color;
       
@@ -68,7 +69,7 @@ const Canvas = ({ height, width, disable } : {height: number, width: number, dis
     const context = canvasRef.current?.getContext('2d');
 
     if (context) {
-      context.lineWidth = 10;
+      context.lineWidth = lineWidth;
       context.lineCap = "round";
       context.strokeStyle = color;
       
@@ -111,7 +112,7 @@ const Canvas = ({ height, width, disable } : {height: number, width: number, dis
         const pos = { posX, posY }
         
         // We can transfer the data
-        socket.emit("send_coordinates", { roomId, pos, color });
+        socket.emit("send_coordinates", { roomId, pos, color, lineWidth });
       }
     } else {
       throw console.error("Context Not Found");

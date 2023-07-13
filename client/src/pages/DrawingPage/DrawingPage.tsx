@@ -4,6 +4,7 @@ import ChatWidget from "../../components/ChatWidget/ChatWidget";
 import ColorWidget from "../../components/ColorWidget/ColorWidget";
 import DrawingPageTimer from "../../components/DrawingPageTimer/DrawingPageTimer";
 import GameEndOverlay from "../../components/GameEndOverlay/GameEndOverlay";
+import LineWidthPicker from "../../components/LineWidthPicker/LineWidthPicker";
 import ScoreWidget from "../../components/ScoreWidget/ScoreWidget";
 import SelectWordTimer from "../../components/SuggestionsOverlay/SuggestionsOverlay";
 import useGameState from "../../store/gameState";
@@ -75,6 +76,7 @@ const DrawingPage = () => {
       </div>
       <div className="flexbox">
         <ColorWidget width={400} height={80} />
+        <LineWidthPicker width={80} height={80} />
       </div>
     </div>
   )

@@ -332,10 +332,10 @@ io.on("connection", (socket) => {
     startGame(roomId);
   })
 
-  socket.on("send_coordinates", ({ roomId, pos, color }) => {
+  socket.on("send_coordinates", ({ roomId, pos, color, lineWidth }) => {
     // Sends the message to all the clients
     // except the one it recieved it from
-    io.to(roomId).emit("recieve_message", { pos, color });
+    io.to(roomId).emit("recieve_message", { pos, color, lineWidth });
   })
 
   socket.on("mouse-down", ({ roomId }) => {
