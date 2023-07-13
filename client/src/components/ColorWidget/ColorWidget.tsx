@@ -7,25 +7,25 @@ const ColorWidget = ({ width, height } : { width: number, height: number }) => {
   const setColor = useCanvasState(state => state.setColor);
 
   const colors = [
-    '#e6194b', // Red
-    '#3cb44b', // Green
-    '#ffe119', // Yellow
+    '#f44336', // Red
+    '#9c27b0', // Purple
+    '#3f51b5', // Indigo
     '#4363d8', // Blue
-    '#f58231', // Orange
-    '#911eb4', // Purple
-    '#46f0f0', // Cyan
-    '#f032e6', // Magenta
-    '#bcf60c', // Lime
-    '#fabebe', // Pink
-    '#008080', // Teal
-    '#e6beff', // Lavender
-    '#9a6324', // Brown
-    '#fffac8', // Beige
-    '#800000', // Maroon
-    '#aaffc3', // Mint
-    '#808000', // Olive
-    '#000075', // Navy
-    '#ffffff', // White
+    '#03a9f4', // Light Blue
+    '#009688', // Teal
+    '#8bc34a', // Light Green
+    '#ffeb3b', // Yellow
+    '#ff5722', // Deep orange
+    '#fafafa', // White
+    '#e91e63', // Pink
+    '#673ab7', // Deep Purple
+    '#2196f3', // Blue
+    '#00bcd4', // Cyan
+    '#4caf50', // Green
+    '#cddc39', // Lime
+    '#ffc107', // Amber
+    '#ff9800', // Orange
+    '#795548', // Brown
     '#000000'  // Black
   ];
 
