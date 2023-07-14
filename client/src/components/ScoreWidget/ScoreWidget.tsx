@@ -37,6 +37,15 @@ const ScoreWidget = ({ width, height } : { width: number, height: number }) => {
     >
       {
         getSortedScoreArray(score).map(sc => {
+          if (sc[0] === socket.id)
+            return (
+              <div style={{ color: "purple" }} className="score-widget-player" key={sc[0]}>
+                <div className="score-widget-player-name">{getPlayerNameFromList(sc[0])}</div>
+                :
+                <div className="score-widget-player-score">{sc[1]}</div>
+              </div>
+            )
+          else
           return (
             <div className="score-widget-player" key={sc[0]}>
               <div className="score-widget-player-name">{getPlayerNameFromList(sc[0])}</div>
