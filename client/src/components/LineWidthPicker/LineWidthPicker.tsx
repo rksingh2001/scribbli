@@ -6,6 +6,7 @@ const LineWidthPicker = ({ width, height } : { width: number, height : number })
   const currentLineWidth = useCanvasState(state => state.lineWidth);
   const setLineWidth = useCanvasState(state => state.setLineWidth);
   const color = useCanvasState(state => state.color);
+  const setUtilitySelected = useCanvasState(state => state.setUtilitySelected)
   
   const allowedWidths = [
     2.5,
@@ -16,6 +17,7 @@ const LineWidthPicker = ({ width, height } : { width: number, height : number })
 
   const handleClick = (lineWidthToSelect: number) => {
     setLineWidth(lineWidthToSelect);
+    setUtilitySelected(undefined)
   }
 
   return (

@@ -7,6 +7,7 @@ import GameEndOverlay from "../../components/GameEndOverlay/GameEndOverlay";
 import LineWidthPicker from "../../components/LineWidthPicker/LineWidthPicker";
 import ScoreWidget from "../../components/ScoreWidget/ScoreWidget";
 import SelectWordTimer from "../../components/SuggestionsOverlay/SuggestionsOverlay";
+import UtilitiesWidget from "../../components/UtilitiesWidget/UtilitiesWidget";
 import useGameState from "../../store/gameState";
 import usePlayerTurnId from "../../store/playerTurnStore";
 import useSocket from "../../store/socket";
@@ -77,6 +78,7 @@ const DrawingPage = () => {
       <div className="flexbox">
         <ColorWidget width={400} height={80} />
         <LineWidthPicker width={80} height={80} />
+        <UtilitiesWidget width={40} height={80} />
       </div>
     </div>
   )
