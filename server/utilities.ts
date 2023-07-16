@@ -9,20 +9,20 @@ export const sleep = (milliseconds: number) => {
   return new Promise(resolve => setTimeout(resolve, milliseconds));
 }
 
-// Picks a count number of random suggestions and return is as a list
-export const getRandomSuggestions = (count: number, suggestions: string[]) => {
-  if (count >= suggestions.length) {
-    return suggestions;
+// Picks a count number of random list and return is as a list
+export const getRandomValues = (count: number, list: string[]) => {
+  if (count >= list.length) {
+    return list;
   }
 
-  const randomSuggestions : Set<number> = new Set();
+  const randomMembers : Set<number> = new Set();
 
-  while (randomSuggestions.size !== count) {
-    randomSuggestions.add(Math.floor(Math.random() * suggestions.length));
+  while (randomMembers.size !== count) {
+    randomMembers.add(Math.floor(Math.random() * list.length));
   }
 
   const response : string[] = [];
-  randomSuggestions.forEach(num => response.push(suggestions[num]));
+  randomMembers.forEach(num => response.push(list[num]));
 
   return response;
 }

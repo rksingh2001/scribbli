@@ -3,8 +3,8 @@ import dotenv from 'dotenv';
 import { Server } from 'socket.io';
 import cors from 'cors';
 import http from 'http';
-import { convertToUnderscores, getPlayersList, getRandomSuggestions, sendOnlyToSocketId, sleep } from './utilities';
-import { ROUND_TIME_SECONDS, suggestions } from './constants';
+import { convertToUnderscores, getPlayersList, getRandomValues, sendOnlyToSocketId, sleep } from './utilities';
+import { names, ROUND_TIME_SECONDS, suggestions } from './constants';
 import { v4 as uuidv4 } from 'uuid';
 
 dotenv.config();
@@ -161,7 +161,7 @@ const startGame = async (roomName: string) => {
         }
 
         // Start of player's turn in a round
-        const randomSuggestions = getRandomSuggestions(3, suggestions);
+        const randomSuggestions = getRandomValues(3, suggestions);
         updateValuesInGameState({ word: randomSuggestions[0] }, roomName); // Sets a default word in case no word is selected
         sendOnlyToSocketId(playerSocketId, "random-suggestions", { randomSuggestions: randomSuggestions });
         
@@ -299,6 +299,11 @@ io.on("connection", (socket) => {
     socket.join(roomId);
     socket.emit("room-id", { roomId: roomId });
 
+    const playerName = playerNameMap.get(socket.id);
+    if (!playerName) {
+      playerNameMap.set(socket.id , getRandomValues(1, names)[0]);
+    }
+
     // Todo: Add a listener for players-event which is common for
     // the app and isn't binded to any component, so that we
     // can update the number of players any time, and do not need
@@ -311,19 +316,19 @@ io.on("connection", (socket) => {
 
   socket.on("join-room", (roomId) => {
     socket.join(roomId);
-    // const clients = io.sockets.adapter.rooms.get(roomId);
-    // const numClients = clients ? clients.size : 0;
 
-    // We want to send the list of all the clients to the client
-    // after it joins the room
-    // const players = io.sockets.adapter.rooms.get(roomId);
+    const playerName = playerNameMap.get(socket.id);
+    if (!playerName) {
+      playerNameMap.set(socket.id , getRandomValues(1, names)[0]);
+    }
 
     const players = getPlayersList(roomId);
     io.in(roomId).emit("players-event", players);
   })
 
   socket.on("save-name", ({ playerName }) => {
-    playerNameMap.set(socket.id, playerName);
+    if (playerName)
+      playerNameMap.set(socket.id, playerName);
   })
 
   socket.on("start", ({ roomId, numOfRounds }) => {
