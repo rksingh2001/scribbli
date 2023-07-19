@@ -16,7 +16,7 @@ const ColorWidget = ({ width, height } : { width: number, height: number }) => {
     '#8bc34a', // Light Green
     '#ffeb3b', // Yellow
     '#ff5722', // Deep orange
-    '#fafafa', // White
+    '#ffffff', // White
     '#e91e63', // Pink
     '#673ab7', // Deep Purple
     '#2196f3', // Blue
