@@ -78,7 +78,7 @@ const Canvas = ({ height, width, disable } : {height: number, width: number, dis
     const startColor = getPixelColor(x, y);
     const replacementColor: number[] = [0, 0, 0, 0];
     
-    if (startColor[3] === 0 || compareColors(startColor, replacementColor)) {
+    if (compareColors(startColor, replacementColor) && utilitySelected === 'eraser') {
       return;
     }
     
@@ -125,10 +125,6 @@ const Canvas = ({ height, width, disable } : {height: number, width: number, dis
       return color1[0] === color2[0] && color1[1] === color2[1] && color1[2] === color2[2] && color1[3] === color2[3];
     }
   }
-
-  const handleErase = (x: number, y: number) => {
-    bfsColorFill(x, y, 'white');
-  }  
   
   const mouseDraw : MouseEventHandler<HTMLCanvasElement> = (e) => {
     if (!isPainting) return;
@@ -209,15 +205,17 @@ const Canvas = ({ height, width, disable } : {height: number, width: number, dis
   }
 
   const handleClick: MouseEventHandler<HTMLCanvasElement> = (e) => {
-    // const canvasRef = canvasRef.current?.getContext('2d');
-    if (!canvasRef?.current || utilitySelected !== 'eraser') {
-      return;
+    if (canvasRef?.current && utilitySelected === 'eraser') {
+      const rect = canvasRef.current.getBoundingClientRect();
+      const posX = e.clientX - rect.left;
+      const posY = e.clientY - rect.top;
+      bfsColorFill(posX, posY, 'white');
+    } else if (canvasRef?.current && utilitySelected === 'colorfill') {
+      const rect = canvasRef.current.getBoundingClientRect();
+      const posX = e.clientX - rect.left;
+      const posY = e.clientY - rect.top;
+      bfsColorFill(posX, posY, color);
     }
-
-    const rect = canvasRef.current.getBoundingClientRect();
-    const posX = e.clientX - rect.left;
-    const posY = e.clientY - rect.top;
-    handleErase(posX, posY);
   }
 
   const startPainting = () => {
