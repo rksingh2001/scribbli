@@ -64,7 +64,7 @@ const Canvas = ({ height, width, disable } : {height: number, width: number, dis
     }
   }
 
-  const handleErase = (x: number, y: number) => {
+  const bfsColorFill = (x: number, y: number, colorToFill: string) => {
     const ctx = canvasRef.current?.getContext('2d');
     if (!ctx) {
       throw new Error('Could not retrieve 2D context from canvas element');
@@ -95,7 +95,7 @@ const Canvas = ({ height, width, disable } : {height: number, width: number, dis
       const color: number[] = getPixelColor(x, y);
       
       if (compareColors(color, startColor)) {
-        ctx.fillStyle = "white";
+        ctx.fillStyle = colorToFill;
         const off = 1;
         ctx.fillRect(x-off, y-off, off*2, off*2);
 
@@ -110,7 +110,7 @@ const Canvas = ({ height, width, disable } : {height: number, width: number, dis
         }
       }
     }
-    
+
     function getPixelColor(x: number, y: number) {
       const pixelDataIndex = (Math.round(y) * imageData.width + Math.round(x)) * 4;
       const r = imageData.data[pixelDataIndex];
@@ -124,6 +124,10 @@ const Canvas = ({ height, width, disable } : {height: number, width: number, dis
     function compareColors(color1: number[], color2: number[]): boolean {
       return color1[0] === color2[0] && color1[1] === color2[1] && color1[2] === color2[2] && color1[3] === color2[3];
     }
+  }
+
+  const handleErase = (x: number, y: number) => {
+    bfsColorFill(x, y, 'white');
   }  
   
   const mouseDraw : MouseEventHandler<HTMLCanvasElement> = (e) => {
