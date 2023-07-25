@@ -30,9 +30,13 @@ const Canvas = ({ height, width, disable } : {height: number, width: number, dis
     socket.on("clear-canvas", (data) => {
       clearCanvas();
     })
+
+    socket.on('color-fill', ({ posX, posY, colorToFill }) => {
+      bfsColorFill(posX, posY, colorToFill)
+    })
   }, [socket]);
 
-  const draw = (pos : { posX : string, posY : string}, color: string, lineWidth: number) => {
+  const draw = (pos : { posX : number, posY : number}, color: string, lineWidth: number) => {
     const context = canvasRef.current?.getContext('2d');
     
     if (context) {
@@ -45,10 +49,10 @@ const Canvas = ({ height, width, disable } : {height: number, width: number, dis
         return;
       }
       
-      context.lineTo(parseFloat(pos.posX), parseFloat(pos.posY));
+      context.lineTo(pos.posX, pos.posY);
       context.stroke();
       context.beginPath();
-      context.moveTo(parseFloat(pos.posX), parseFloat(pos.posY));
+      context.moveTo(pos.posX, pos.posY);
     } else {
       throw new Error("Canvas context not found.");
     }
@@ -147,6 +151,9 @@ const Canvas = ({ height, width, disable } : {height: number, width: number, dis
       const posX = e.clientX - offsetX;
       const posY = e.clientY - offsetY;
 
+      if (lineWidth)
+      draw({ posX, posY }, color, lineWidth);
+
       context.lineTo(posX, posY);
       context.stroke();
       context.beginPath();
@@ -194,28 +201,28 @@ const Canvas = ({ height, width, disable } : {height: number, width: number, dis
     }
 
     socket.emit("mouse-down", { roomId });
-
     startPainting();
   }
 
   const handleMouseUp = () => {
     socket.emit("mouse-up", { roomId });
-
     stopPainting();
   }
 
   const handleClick: MouseEventHandler<HTMLCanvasElement> = (e) => {
-    if (canvasRef?.current && utilitySelected === 'eraser') {
-      const rect = canvasRef.current.getBoundingClientRect();
-      const posX = e.clientX - rect.left;
-      const posY = e.clientY - rect.top;
-      bfsColorFill(posX, posY, 'white');
-    } else if (canvasRef?.current && utilitySelected === 'colorfill') {
-      const rect = canvasRef.current.getBoundingClientRect();
-      const posX = e.clientX - rect.left;
-      const posY = e.clientY - rect.top;
-      bfsColorFill(posX, posY, color);
-    }
+    if(!canvasRef?.current || (utilitySelected !== 'eraser' && utilitySelected !== 'colorfill')) return;
+
+    const rect = canvasRef.current.getBoundingClientRect();
+    const posX = e.clientX - rect.left;
+    const posY = e.clientY - rect.top;
+
+    let colorToFill;
+    if (utilitySelected === 'eraser') colorToFill = 'white';
+    if (utilitySelected === 'colorfill') colorToFill = color;
+
+    socket.emit('color-fill', { posX: posX, posY: posY, colorToFill: colorToFill, roomId: roomId });
+    // @ts-ignore: colorToFill will never be undefined 
+    bfsColorFill(posX, posY, colorToFill);
   }
 
   const startPainting = () => {
