@@ -287,6 +287,7 @@ io.on("connection", (socket) => {
       const message = playerNameMap.get(socketID) + " has guessed the correct word ✅";
       io.to(roomId).emit("recieve-message", { senderID: socketID, msg: message });
     } else {
+      msg = playerNameMap.get(socketID) + ": " + msg;
       io.to(roomId).emit("recieve-message", { senderID: socketID, msg: msg });
     }
   })
