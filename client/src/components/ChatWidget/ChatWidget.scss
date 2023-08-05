@@ -11,6 +11,12 @@
 
 .chat-messages {
   padding: 5px;
+  font-size: 0.9rem;
+
+  div {
+    max-width: 100%;
+    overflow-wrap: break-word;
+  }
 }
 
 .chat-input {

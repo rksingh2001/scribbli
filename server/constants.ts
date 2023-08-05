@@ -314,3 +314,42 @@ export const names = [
   "Professor Snickerfeet",
   "Commander Sillinessmuffin"
 ];
+
+export const colors = [
+  // Red Colors
+  ['#fff5f5', '#7f1d1d'], // Red-50, Red-700
+  // Orange Colors
+  ['#fffaf0', '#78350f'], // Orange-50, Orange-700
+  // Yellow Colors
+  ['#fffff0', '#744210'], // Yellow-50, Yellow-700
+  // Green Colors
+  ['#f0fff4', '#22543d'], // Green-50, Green-700
+  // Blue Colors
+  ['#f0f9ff', '#1e3a8a'], // Blue-50, Blue-700
+  // Indigo Colors
+  ['#f0f5ff', '#1c3d6d'], // Indigo-50, Indigo-700
+  // Purple Colors
+  ['#f6f5ff', '#4c1d95'], // Purple-50, Purple-700
+  // Pink Colors
+  ['#fff5f7', '#852029'], // Pink-50, Pink-700
+  // Red-Violet Colors
+  ['#fdf4ff', '#7924c0'], // Red-Violet-50, Red-Violet-700
+  // Amber Colors
+  ['#fffbf0', '#8d2b0b'], // Amber-50, Amber-700
+  // Lime Colors
+  ['#f7ffeb', '#3c8605'], // Lime-50, Lime-700
+  // Emerald Colors
+  ['#ecfdf5', '#276749'], // Emerald-50, Emerald-700
+  // Teal Colors
+  ['#f0fdfa', '#0d3331'], // Teal-50, Teal-700
+  // Cyan Colors
+  ['#f0fdff', '#145e7a'], // Cyan-50, Cyan-700
+  // Light-Blue Colors
+  ['#f0f9ff', '#1e3a8a'], // Light-Blue-50, Light-Blue-700
+  // Violet Colors
+  ['#f5f3ff', '#4c1d95'], // Violet-50, Violet-700
+  // Fuchsia Colors
+  ['#fff4f9', '#852029'], // Fuchsia-50, Fuchsia-700
+  // Rose Colors
+  ['#fff2f9', '#902340'], // Rose-50, Rose-700
+];

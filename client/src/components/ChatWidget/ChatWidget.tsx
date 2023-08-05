@@ -3,17 +3,20 @@ import './ChatWidget.scss';
 import useRoomId from '../../store/roomId';
 import useSocket from '../../store/socket';
 import usePlayerTurnId from '../../store/playerTurnStore';
+import usePlayerList from '../../store/playerList';
 
 const ChatWidget = ({ height, width } : { height: number, width: number }) => {
-  const [messages, setMessages] = useState([""]);
+  const [messages, setMessages] = useState([{ msg: "", colors: ["white", "white"]}]);  // [message, senderId]
   const [inputValue, setInputValue] = useState("");
   const socket = useSocket(state => state.socket);
   const roomId = useRoomId(state => state.roomId);
   const playerTurnId = usePlayerTurnId(state => state.playerTurnId);
+  const getPlayerColors = usePlayerList(state => state.getPlayerColors);
 
   useEffect(() => {
     socket.on("recieve-message", ({ senderID, msg }) => {
-      setMessages(current => [...current, msg]);
+      if (messages.length > 50) messages.shift();
+      setMessages(current => [...current, { msg, colors: getPlayerColors(senderID) }]);
     })
   }, []);
 
@@ -35,7 +38,7 @@ const ChatWidget = ({ height, width } : { height: number, width: number }) => {
       <div className='chat-messages'>
         {messages.map((message, idx) => {
           return (
-            <div key={idx}>{message}</div>
+            <div style={{ backgroundColor: message.colors[0], color: message.colors[1] }} key={idx}>{message.msg}</div>
           )
         })}
       </div>

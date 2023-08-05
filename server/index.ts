@@ -4,7 +4,7 @@ import { Server } from 'socket.io';
 import cors from 'cors';
 import http from 'http';
 import { convertToUnderscores, getPlayersList, getRandomValues, sendOnlyToSocketId, sleep } from './utilities';
-import { names, ROUND_TIME_SECONDS, suggestions } from './constants';
+import { colors, names, ROUND_TIME_SECONDS, suggestions } from './constants';
 import { v4 as uuidv4 } from 'uuid';
 
 dotenv.config();
@@ -35,6 +35,7 @@ type GameStateObjectType = {
 type GameStateType = Map<string, GameStateObjectType>;
 
 export const playerNameMap : Map<string, string> = new Map();
+export const playerColorsMap : Map<string, string[]> = new Map();
 
 // roomId -> GameStateObject
 const gameState: GameStateType = new Map();
@@ -278,6 +279,7 @@ const matchStringAndUpdateScore = (roomId: string, message: string, socketId: st
 
 io.on("connection", (socket) => {
   console.log(`User Connected: ${socket.id}`)
+  playerColorsMap.set(socket.id, getRandomValues(1, colors)[0]);
 
   socket.on("send-message", ({ roomId, msg }) => {
     const socketID = socket.id;

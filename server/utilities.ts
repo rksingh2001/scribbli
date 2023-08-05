@@ -1,8 +1,9 @@
-import { io, playerNameMap } from './index';
+import { io, playerColorsMap, playerNameMap } from './index';
 
 type playerObjType = {
   playerId: string,
   playerName: string,
+  playerColors: string[]
 }
 
 export const sleep = (milliseconds: number) => {
@@ -10,7 +11,7 @@ export const sleep = (milliseconds: number) => {
 }
 
 // Picks a count number of random list and return is as a list
-export const getRandomValues = (count: number, list: string[]) => {
+export const getRandomValues = <T>(count: number, list: T[]) => {
   if (count >= list.length) {
     return list;
   }
@@ -21,7 +22,7 @@ export const getRandomValues = (count: number, list: string[]) => {
     randomMembers.add(Math.floor(Math.random() * list.length));
   }
 
-  const response : string[] = [];
+  const response : T[] = [];
   randomMembers.forEach(num => response.push(list[num]));
 
   return response;
@@ -45,6 +46,7 @@ export const getPlayersList = (roomId: string) => {
       playersList.push({
         playerId: socketId,
         playerName: playerNameMap.get(socketId) ?? "",
+        playerColors: playerColorsMap.get(socketId) ?? ["white", "black"],
       })
     })
 
