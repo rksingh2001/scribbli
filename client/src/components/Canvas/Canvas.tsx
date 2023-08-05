@@ -152,12 +152,7 @@ const Canvas = ({ height, width, disable } : {height: number, width: number, dis
       const posY = e.clientY - offsetY;
 
       if (lineWidth)
-      draw({ posX, posY }, color, lineWidth);
-
-      context.lineTo(posX, posY);
-      context.stroke();
-      context.beginPath();
-      context.moveTo(posX, posY);
+        draw({ posX, posY }, color, lineWidth);
     } else {
       throw console.error("Context Not Found");
     }
@@ -205,6 +200,8 @@ const Canvas = ({ height, width, disable } : {height: number, width: number, dis
   }
 
   const handleMouseUp = () => {
+    if (!lineWidth) 
+      return;
     socket.emit("mouse-up", { roomId });
     stopPainting();
   }
@@ -213,8 +210,8 @@ const Canvas = ({ height, width, disable } : {height: number, width: number, dis
     if(!canvasRef?.current || (utilitySelected !== 'eraser' && utilitySelected !== 'colorfill')) return;
 
     const rect = canvasRef.current.getBoundingClientRect();
-    const posX = e.clientX - rect.left;
-    const posY = e.clientY - rect.top;
+    const posX = Math.round(e.clientX - rect.left);
+    const posY = Math.round(e.clientY - rect.top);
 
     let colorToFill;
     if (utilitySelected === 'eraser') colorToFill = 'white';
