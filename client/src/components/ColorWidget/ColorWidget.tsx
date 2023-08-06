@@ -2,7 +2,7 @@ import { MouseEventHandler } from 'react';
 import useCanvasState from '../../store/canvasState';
 import './ColorWidget.scss';
 
-const ColorWidget = ({ width, height } : { width: number, height: number }) => {
+const ColorWidget = ({ width, height }: { width: number, height: number }) => {
   const currentColor = useCanvasState(state => state.color);
   const setColor = useCanvasState(state => state.setColor);
 
@@ -29,20 +29,20 @@ const ColorWidget = ({ width, height } : { width: number, height: number }) => {
     '#000000'  // Black
   ];
 
-  const handleClick : MouseEventHandler<HTMLDivElement> = (e) => {
+  const handleClick: MouseEventHandler<HTMLDivElement> = (e) => {
     const colorToSelect = (e.currentTarget.getAttribute("color"));
     setColor(colorToSelect);
   }
-  
+
   return (
     <div style={{ width: width, height: height }} className='color-widget'>
       {
         colors.map(color => {
           return (
             color === currentColor ?
-              <div style={{ backgroundColor: color, height: height/2, width: width/10.39, border: "1px solid white" }}></div>
-            :
-              <div color={color} onClick={handleClick} style={{ backgroundColor: color, height: height/2, width: width/10.39, border: "1px solid black" }}></div>
+              <div style={{ backgroundColor: color, height: height / 2, width: width / 10.39, border: "1px solid white" }}></div>
+              :
+              <div color={color} onClick={handleClick} style={{ backgroundColor: color, height: height / 2, width: width / 10.39, border: "1px solid black" }}></div>
           )
         })
       }

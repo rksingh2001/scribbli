@@ -22,7 +22,7 @@ export const getRandomValues = <T>(count: number, list: T[]) => {
     randomMembers.add(Math.floor(Math.random() * list.length));
   }
 
-  const response : T[] = [];
+  const response: T[] = [];
   randomMembers.forEach(num => response.push(list[num]));
 
   return response;
@@ -40,7 +40,7 @@ export const getPlayersList = (roomId: string) => {
   const playersSocketId = io.sockets.adapter.rooms.get(roomId);
   if (playersSocketId) {
     const playersSocketList = [...playersSocketId];
-    const playersList : playerObjType[] = [];
+    const playersList: playerObjType[] = [];
 
     playersSocketList.forEach(socketId => {
       playersList.push({

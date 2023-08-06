@@ -15,7 +15,7 @@ type GameStateType = {
 
 const useGameState = create<GameStateType>(set => ({
   isTimer: false,
-  setIsTimer: (bool: boolean) => set(() => ({isTimer: bool})),
+  setIsTimer: (bool: boolean) => set(() => ({ isTimer: bool })),
   isDisabled: true,
   setIsDisabled: (bool: boolean) => set(() => ({ isDisabled: bool })),
   randomSuggestions: [],

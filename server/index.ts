@@ -322,7 +322,7 @@ io.on("connection", (socket) => {
 
     const playerName = playerNameMap.get(socket.id);
     if (!playerName) {
-      playerNameMap.set(socket.id , getRandomValues(1, names)[0]);
+      playerNameMap.set(socket.id, getRandomValues(1, names)[0]);
     }
 
     const players = getPlayersList(roomId);
@@ -360,7 +360,7 @@ io.on("connection", (socket) => {
     socket.to(roomId).emit("color-fill", { posX, posY, colorToFill });
   })
 
-  socket.on("word-selected-to-draw", ({ roomId, word } : { roomId: string, word: string }) => {
+  socket.on("word-selected-to-draw", ({ roomId, word }: { roomId: string, word: string }) => {
     console.log('word-selected-to-draw', word);
     updateValuesInGameState({ word: word, stopTimer: true }, roomId);
   })

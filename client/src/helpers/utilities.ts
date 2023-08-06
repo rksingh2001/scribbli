@@ -14,7 +14,7 @@ export const getPlayerNameFromList = (socketId: string) => {
 
 export const getSortedScoreArray = (scoreObj: Object) => {
   const scoreList = Object.entries(scoreObj);
-  scoreList.sort(function(a, b) {
+  scoreList.sort(function (a, b) {
     return b[1] - a[1];
   });
 

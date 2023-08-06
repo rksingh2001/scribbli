@@ -5,8 +5,8 @@ import useSocket from '../../store/socket';
 import usePlayerTurnId from '../../store/playerTurnStore';
 import usePlayerList from '../../store/playerList';
 
-const ChatWidget = ({ height, width } : { height: number, width: number }) => {
-  const [messages, setMessages] = useState([{ msg: "", colors: ["white", "white"]}]);  // [message, senderId]
+const ChatWidget = ({ height, width }: { height: number, width: number }) => {
+  const [messages, setMessages] = useState([{ msg: "", colors: ["white", "white"] }]);  // [message, senderId]
   const [inputValue, setInputValue] = useState("");
   const socket = useSocket(state => state.socket);
   const roomId = useRoomId(state => state.roomId);
@@ -25,9 +25,9 @@ const ChatWidget = ({ height, width } : { height: number, width: number }) => {
   }
 
   const handleKeyDown = (e: any) => {
-    if (e.key !==  'Enter') return;
+    if (e.key !== 'Enter') return;
     if (socket.id === playerTurnId) return;
-    
+
     // Emit the Message to rest of the users
     socket.emit("send-message", { roomId: roomId, msg: inputValue });
     setInputValue("");

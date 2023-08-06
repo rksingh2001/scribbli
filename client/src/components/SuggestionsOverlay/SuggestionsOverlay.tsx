@@ -32,33 +32,33 @@ const SuggestionsOverlay = () => {
 
   return (
     <div className="timer">
-       Timer : {seconds}
-       <div>
-        { 
+      Timer : {seconds}
+      <div>
+        {
           randomSuggestions.map(suggestion => {
             if (suggestion === wordToDraw) {
               return (
-                <button 
-                  id={suggestion} 
-                  onClick={() => handleClick(suggestion)} 
+                <button
+                  id={suggestion}
+                  onClick={() => handleClick(suggestion)}
                   className='timer-button highlighted-button'
-                > 
+                >
                   {suggestion}
                 </button>
               )
             } else {
               return (
-                <button 
-                  id={suggestion} 
-                  onClick={() => handleClick(suggestion)} 
+                <button
+                  id={suggestion}
+                  onClick={() => handleClick(suggestion)}
                   className='timer-button'
-                > 
+                >
                   {suggestion}
                 </button>
               )
             }
-        })}
-       </div>
+          })}
+      </div>
     </div>
   )
 }
