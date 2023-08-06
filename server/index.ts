@@ -343,21 +343,21 @@ io.on("connection", (socket) => {
   socket.on("send_coordinates", ({ roomId, pos, color, lineWidth }) => {
     // Sends the message to all the clients
     // except the one it recieved it from
-    io.to(roomId).emit("recieve_message", { pos, color, lineWidth });
+    socket.to(roomId).emit("recieve_message", { pos, color, lineWidth });
   })
 
   socket.on("mouse-down", ({ roomId }) => {
     // data here is just {}
-    io.to(roomId).emit("mouse-down", {});
+    socket.to(roomId).emit("mouse-down", {});
   })
 
   socket.on("mouse-up", ({ roomId }) => {
     // data here is just {}
-    io.to(roomId).emit("mouse-up", {});
+    socket.to(roomId).emit("mouse-up", {});
   })
 
   socket.on("color-fill", ({ posX, posY, colorToFill, roomId }) => {
-    io.to(roomId).emit("color-fill", { posX, posY, colorToFill });
+    socket.to(roomId).emit("color-fill", { posX, posY, colorToFill });
   })
 
   socket.on("word-selected-to-draw", ({ roomId, word } : { roomId: string, word: string }) => {
