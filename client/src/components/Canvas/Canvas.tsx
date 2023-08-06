@@ -92,6 +92,7 @@ const Canvas = ({ height, width, disable }: { height: number, width: number, dis
     let uniquePixelValues = new Set<string>;
 
     // const startTime = performance.now();
+
     while (pixelStack.length) {
       const pixel = pixelStack.shift()!;
       const { x, y } = pixel;
