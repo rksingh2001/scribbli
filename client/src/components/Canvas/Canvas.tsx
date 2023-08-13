@@ -5,7 +5,12 @@ import useRoomId from "../../store/roomId";
 import useSocket from "../../store/socket";
 import useCanvasState from "../../store/canvasState";
 
-const Canvas = ({ height, width, disable }: { height: number, width: number, disable: boolean }) => {
+// Fixed ratio of width to height
+const ratio = 800 / 500;
+const innerWidth = window.innerWidth
+const canvasWidthPercentage = innerWidth <= 800 ? 0.9 : 0.557;
+
+const Canvas = ({ disable }: { disable: boolean }) => {
   const [isPainting, setIsPainting] = useState(false);
   const roomId = useRoomId(state => state.roomId);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -14,9 +19,21 @@ const Canvas = ({ height, width, disable }: { height: number, width: number, dis
   const lineWidth = useCanvasState(state => state.lineWidth);
   const utilitySelected = useCanvasState(state => state.utilitySelected);
 
+  const width = (innerWidth * canvasWidthPercentage);
+  const height = (innerWidth * canvasWidthPercentage / ratio);
+  const calculatedScale = innerWidth * canvasWidthPercentage / 800;
+
+  const applyScale = ({ posX, posY }: { posX: number, posY: number }): { posX: number, posY: number } => {
+    return { posX: posX * calculatedScale, posY: posY * calculatedScale };
+  }
+
+  const removeScale = ({ posX, posY }: { posX: number, posY: number }): { posX: number, posY: number } => {
+    return { posX: posX / calculatedScale, posY: posY / calculatedScale };
+  }
+
   useEffect(() => {
     socket.on("recieve_message", ({ pos, color, lineWidth }) => {
-      draw(pos, color, lineWidth);
+      draw(applyScale(pos), color, lineWidth);
     })
 
     socket.on("mouse-down", (data) => {
@@ -32,7 +49,8 @@ const Canvas = ({ height, width, disable }: { height: number, width: number, dis
     })
 
     socket.on('color-fill', ({ posX, posY, colorToFill }) => {
-      dfsColorFill(posX, posY, colorToFill)
+      const pos = applyScale({ posX, posY });
+      dfsColorFill(pos.posX, pos.posY, colorToFill);
     })
   }, [socket]);
 
@@ -40,7 +58,7 @@ const Canvas = ({ height, width, disable }: { height: number, width: number, dis
     const context = canvasRef.current?.getContext('2d');
 
     if (context) {
-      context.lineWidth = lineWidth;
+      context.lineWidth = lineWidth * calculatedScale;
       context.lineCap = "round";
       context.strokeStyle = color;
 
@@ -62,32 +80,35 @@ const Canvas = ({ height, width, disable }: { height: number, width: number, dis
     const context = canvasRef.current?.getContext('2d');
 
     if (context) {
-      context.clearRect(0, 0, width, height);
+      context.clearRect(0, 0, width + 2, height + 2);
     } else {
       throw new Error("Canvas context not found.");
     }
   }
 
-  const dfsColorFill = (x: number, y: number, colorToFill: string) => {
+  const dfsColorFill = (posX: number, posY: number, colorToFill: string) => {
     const ctx = canvasRef.current?.getContext('2d');
     if (!ctx) {
       throw new Error('Could not retrieve 2D context from canvas element');
     }
 
-    x = Math.round(x);
-    y = Math.round(y);
+    // posX and posY shouldn't be floats, as getPixelColor, would
+    // not work, this might be the reason of inconsistencies in color
+    // fill
+    posX = Math.round(posX);
+    posY = Math.round(posY);
 
     const imageData: ImageData = ctx.getImageData(0, 0, width, height);
 
-    const startColor = getPixelColor(x, y);
+    const startColor = getPixelColor(posX, posY);
     const replacementColor: number[] = [0, 0, 0, 0];
 
     if (compareColors(startColor, replacementColor) && utilitySelected === 'eraser') {
       return;
     }
 
-    const pixelStack: { x: number; y: number }[] = [];
-    pixelStack.push({ x, y });
+    const pixelStack: { posX: number; posY: number }[] = [];
+    pixelStack.push({ posX, posY });
 
     let uniquePixelValues = new Set<string>;
 
@@ -95,23 +116,23 @@ const Canvas = ({ height, width, disable }: { height: number, width: number, dis
 
     while (pixelStack.length) {
       const pixel = pixelStack.shift()!;
-      const { x, y } = pixel;
-      if (uniquePixelValues.has(`${x}|${y}`)) continue;
+      const { posX, posY } = pixel;
+      if (uniquePixelValues.has(`${posX}|${posY}`)) continue;
 
-      const color: number[] = getPixelColor(x, y);
+      const color: number[] = getPixelColor(posX, posY);
 
       if (compareColors(color, startColor)) {
         ctx.fillStyle = colorToFill;
         const off = 1;
-        ctx.fillRect(x - off, y - off, off * 2, off * 2);
+        ctx.fillRect(posX - off, posY - off, off * 2, off * 2);
 
-        uniquePixelValues.add(`${x}|${y}`);
+        uniquePixelValues.add(`${posX}|${posY}`);
         const offset = 2;
         for (let i = 1; i <= offset; ++i) {
-          if (x - i >= 0) pixelStack.push({ x: x - i, y });
-          if (x + i <= width - 1) pixelStack.push({ x: x + i, y });
-          if (y - i >= 0) pixelStack.push({ x, y: y - i });
-          if (y + i <= height - 1) pixelStack.push({ x, y: y + i });
+          if (posX - i >= 0) pixelStack.push({ posX: posX - i, posY });
+          if (posX + i <= width - 1) pixelStack.push({ posX: posX + i, posY });
+          if (posY - i >= 0) pixelStack.push({ posX, posY: posY - i });
+          if (posY + i <= height - 1) pixelStack.push({ posX, posY: posY + i });
         }
       }
     }
@@ -139,9 +160,7 @@ const Canvas = ({ height, width, disable }: { height: number, width: number, dis
     const context = canvasRef.current?.getContext('2d');
 
     if (context) {
-      context.lineWidth = lineWidth ?? 10;
-      context.lineCap = "round";
-      context.strokeStyle = color;
+
 
       if (canvasRef.current === null) {
         console.error("Error: CanvasRef.current is null");
@@ -154,8 +173,10 @@ const Canvas = ({ height, width, disable }: { height: number, width: number, dis
       const posX = e.clientX - offsetX;
       const posY = e.clientY - offsetY;
 
+      const pos = { posX, posY };
+
       if (lineWidth)
-        draw({ posX, posY }, color, lineWidth);
+        draw(pos, color, lineWidth);
     } else {
       throw console.error("Context Not Found");
     }
@@ -181,7 +202,7 @@ const Canvas = ({ height, width, disable }: { height: number, width: number, dis
         const posX = e.clientX - offsetX;
         const posY = e.clientY - offsetY;
 
-        const pos = { posX, posY }
+        const pos = removeScale({ posX, posY });
 
         // We can transfer the data
         socket.emit("send_coordinates", { roomId, pos, color, lineWidth });
@@ -216,11 +237,13 @@ const Canvas = ({ height, width, disable }: { height: number, width: number, dis
     const posX = Math.round(e.clientX - rect.left);
     const posY = Math.round(e.clientY - rect.top);
 
+    const pos = removeScale({ posX, posY });
+
     let colorToFill;
     if (utilitySelected === 'eraser') colorToFill = 'white';
     if (utilitySelected === 'colorfill') colorToFill = color;
 
-    socket.emit('color-fill', { posX: posX, posY: posY, colorToFill: colorToFill, roomId: roomId });
+    socket.emit('color-fill', { ...pos, colorToFill: colorToFill, roomId: roomId });
     // @ts-ignore: colorToFill will never be undefined 
     dfsColorFill(posX, posY, colorToFill);
   }
