@@ -1,4 +1,4 @@
-import { io, playerColorsMap, playerNameMap } from './index';
+import { io, playerStateMap } from './index';
 
 type playerObjType = {
   playerId: string,
@@ -16,7 +16,7 @@ export const getRandomValues = <T>(count: number, list: T[]) => {
     return list;
   }
 
-  const randomMembers : Set<number> = new Set();
+  const randomMembers: Set<number> = new Set();
 
   while (randomMembers.size !== count) {
     randomMembers.add(Math.floor(Math.random() * list.length));
@@ -43,11 +43,15 @@ export const getPlayersList = (roomId: string) => {
     const playersList: playerObjType[] = [];
 
     playersSocketList.forEach(socketId => {
-      playersList.push({
-        playerId: socketId,
-        playerName: playerNameMap.get(socketId) ?? "",
-        playerColors: playerColorsMap.get(socketId) ?? ["white", "black"],
-      })
+      const playerStateObj = playerStateMap.get(socketId);
+      console.log("playerList", playerStateObj)
+      if (playerStateObj) {
+        playersList.push({
+          playerId: socketId,
+          playerName: playerStateObj.name ?? "",
+          playerColors: playerStateObj.colors ?? ["white", "black"],
+        });
+      }
     })
 
     return playersList;

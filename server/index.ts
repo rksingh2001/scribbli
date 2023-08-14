@@ -34,8 +34,16 @@ type GameStateObjectType = {
 
 type GameStateType = Map<string, GameStateObjectType>;
 
-export const playerNameMap : Map<string, string> = new Map();
-export const playerColorsMap : Map<string, string[]> = new Map();
+type PlayerStateType = {
+  playerId: string | undefined
+  roomId: string | undefined
+  name: string | undefined
+  colors: string[] | undefined
+}
+
+type PlayerStateMapType = Map<string, PlayerStateType>;
+
+export const playerStateMap: PlayerStateMapType = new Map();
 
 // roomId -> GameStateObject
 const gameState: GameStateType = new Map();
@@ -45,7 +53,7 @@ const initializeGameState = (socketId: string, roomId: string) => {
   const gameStateObj = gameState.get(roomId);
 
   const playersList = getPlayersList(roomId);
-  const scoreObj : ScoreObjectType = {};
+  const scoreObj: ScoreObjectType = {};
   playersList.forEach(({ playerId }) => {
     scoreObj[playerId] = 0;
   })
@@ -135,17 +143,17 @@ const startGame = async (roomName: string) => {
         console.error("Room doesn't exist");
         return;
       }
-  
+
       let playerSocketId = "";
-  
+
       for (const socketId of room) {
         if (!visitedPlayers.has(socketId)) {
           playerSocketId = socketId;
           break;
         }
       }
-  
-      if (playerSocketId !== "")  {
+
+      if (playerSocketId !== "") {
         // Assign a player turn
         if (i === 0 && currentRound === 1) {
           updateValuesInGameState({ playerTurn: playerSocketId }, roomName);
@@ -165,36 +173,36 @@ const startGame = async (roomName: string) => {
         const randomSuggestions = getRandomValues(3, suggestions);
         updateValuesInGameState({ word: randomSuggestions[0] }, roomName); // Sets a default word in case no word is selected
         sendOnlyToSocketId(playerSocketId, "random-suggestions", { randomSuggestions: randomSuggestions });
-        
+
         // This controls the timer on the frontend while selecting
         // any options for drawing
         for (let i = 15; i >= 0; --i) {
           if (gameStateObj.stopTimer) {
             updateValuesInGameState({ stopTimer: false }, roomName);
             io.in(roomName).emit('select-word-timer', { count: 0 });
-            io.in(roomName).emit('drawing-page-timer', { count: 0, message: "Waiting for player to choose a word" });  
+            io.in(roomName).emit('drawing-page-timer', { count: 0, message: "Waiting for player to choose a word" });
             break;
           }
-  
+
           io.in(roomName).emit('select-word-timer', { count: i });
           io.in(roomName).emit('drawing-page-timer', { count: i, message: "Waiting for player to choose a word" });
           await sleep(1000);
         }
-  
+
         // Player turn to draw now
         for (let i = ROUND_TIME_SECONDS; i >= 0; --i) {
           if (gameStateObj.stopTimer) {
             updateValuesInGameState({ stopTimer: false }, roomName);
             break;
           }
-  
+
           io.in(roomName).except(playerSocketId).emit('drawing-page-timer', { count: i, message: "Player is drawing, guess what it is " + convertToUnderscores(gameStateObj.word) });
           sendOnlyToSocketId(playerSocketId, 'drawing-page-timer', { count: i, message: "Your turn to draw " + gameStateObj.word });
           await sleep(1000);
         }
-  
+
         visitedPlayers.add(playerSocketId);
-  
+
         // End of player's turn in a round
         handlePlayerTurnEnd(roomName);
       } else {
@@ -211,7 +219,7 @@ const startGame = async (roomName: string) => {
 }
 
 const matchStringAndUpdateScore = (roomId: string, message: string, socketId: string) => {
-  const gameStateObj =  gameState.get(roomId);
+  const gameStateObj = gameState.get(roomId);
 
   if (!gameStateObj || !gameStateObj.word || !gameStateObj.playerTurn) {
     // Word hasn't been selected or game doesn't exist
@@ -225,7 +233,7 @@ const matchStringAndUpdateScore = (roomId: string, message: string, socketId: st
   // Note: We haven't added the current player who have guessed into the hasGuessedTheWord Object
   let numOfPlayersWhoGuessed = 0;
   Object.values(gameStateObj.hasGuessedTheWord).forEach(hasGuessed => { if (hasGuessed) numOfPlayersWhoGuessed++ });
-  
+
   // String has matched, we should update the score
   // and the message should have way to show that the word has matched
   let scoreToAddToGuesser = 50;
@@ -245,8 +253,7 @@ const matchStringAndUpdateScore = (roomId: string, message: string, socketId: st
   } else if (numOfPlayersWhoGuessed === 4) {
     scoreToAddToDrawer = 25;
   }
-  
-  
+
   const currScore = gameStateObj.score[socketId];
   if (currScore) {
     gameStateObj.score[socketId] = currScore + scoreToAddToGuesser;
@@ -263,13 +270,13 @@ const matchStringAndUpdateScore = (roomId: string, message: string, socketId: st
   }
 
   gameStateObj.hasGuessedTheWord[socketId] = true;
-  
+
   // Stops the loop currently running in case all the guesses were made correctly
   // let count = 0;
   // Object.values(gameStateObj.hasGuessedTheWord).map(hasGuessed => {
   //   if (hasGuessed) count ++;
   // })
-  if (numOfPlayersWhoGuessed >= getPlayersList(roomId).length-2) {
+  if (numOfPlayersWhoGuessed >= getPlayersList(roomId).length - 2) {
     gameStateObj.stopTimer = true;
   }
 
@@ -278,18 +285,31 @@ const matchStringAndUpdateScore = (roomId: string, message: string, socketId: st
 }
 
 io.on("connection", (socket) => {
-  console.log(`User Connected: ${socket.id}`)
-  playerColorsMap.set(socket.id, getRandomValues(1, colors)[0]);
+  console.log(`User Connected: ${socket.id}`);
+
+  // Create Player State Object
+  let playerStateObj: PlayerStateType = {
+    playerId: socket.id,
+    roomId: undefined,
+    name: undefined,
+    colors: getRandomValues(1, colors)[0]
+  }
+  const isPlayerObj = playerStateMap.get(socket.id);
+  if (!isPlayerObj) {
+    playerStateMap.set(socket.id, playerStateObj);
+  } else {
+    playerStateObj = isPlayerObj;
+  }
 
   socket.on("send-message", ({ roomId, msg }) => {
     const socketID = socket.id;
     matchStringAndUpdateScore(roomId, msg, socketID);
 
     if (msg.toLowerCase() === gameState.get(roomId)?.word?.toLowerCase()) {
-      const message = playerNameMap.get(socketID) + " has guessed the correct word ✅";
+      const message = playerStateObj.name + " has guessed the correct word ✅";
       io.to(roomId).emit("recieve-message", { senderID: socketID, msg: message });
     } else {
-      msg = playerNameMap.get(socketID) + ": " + msg;
+      msg = playerStateObj.name + ": " + msg;
       io.to(roomId).emit("recieve-message", { senderID: socketID, msg: msg });
     }
   })
@@ -302,9 +322,8 @@ io.on("connection", (socket) => {
     socket.join(roomId);
     socket.emit("room-id", { roomId: roomId });
 
-    const playerName = playerNameMap.get(socket.id);
-    if (!playerName) {
-      playerNameMap.set(socket.id , getRandomValues(1, names)[0]);
+    if (!playerStateObj.name) {
+      playerStateObj.name = getRandomValues(1, names)[0];
     }
 
     // Todo: Add a listener for players-event which is common for
@@ -313,6 +332,7 @@ io.on("connection", (socket) => {
     // to use such hacks
     setTimeout(() => {
       const players = getPlayersList(roomId);
+      console.log("PLAYERS_LIST", players)
       io.in(roomId).emit("players-event", players);
     }, 200);
   })
@@ -320,9 +340,8 @@ io.on("connection", (socket) => {
   socket.on("join-room", (roomId) => {
     socket.join(roomId);
 
-    const playerName = playerNameMap.get(socket.id);
-    if (!playerName) {
-      playerNameMap.set(socket.id, getRandomValues(1, names)[0]);
+    if (!playerStateObj.name) {
+      playerStateObj.name = getRandomValues(1, names)[0];
     }
 
     const players = getPlayersList(roomId);
@@ -331,7 +350,7 @@ io.on("connection", (socket) => {
 
   socket.on("save-name", ({ playerName }) => {
     if (playerName)
-      playerNameMap.set(socket.id, playerName);
+      playerStateObj.name = playerName;
   })
 
   socket.on("start", ({ roomId, numOfRounds }) => {
@@ -366,7 +385,13 @@ io.on("connection", (socket) => {
   })
 
   socket.on("disconnect", () => {
-    playerNameMap.delete(socket.id);
+    playerStateMap.delete(socket.id);
+    // playerNameMap.delete(socket.id);
+    // Player should be removed from his active game
+    // Now how do we get the room id based upon the player name so we can remove it
+    // Seems like we would need an another data structure, let's store all player info
+    // in the player state
+    // An event should be emitted to other players telling them, that the player has left
   })
 });
 
