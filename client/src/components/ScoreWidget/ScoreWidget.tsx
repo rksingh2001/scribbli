@@ -4,14 +4,13 @@ import usePlayerList from "../../store/playerList";
 import useSocket from "../../store/socket";
 import { getPlayerNameFromList, getSortedScoreArray } from "../../helpers/utilities";
 
+type ScoreObjectType = {
+  [key: string]: number
+}
+
 const ScoreWidget = ({ width, height }: { width: number, height: number }) => {
   const playerList = usePlayerList(state => state.playerList);
   const socket = useSocket(state => state.socket);
-  const getPlayerColors = usePlayerList(state => state.getPlayerColors);
-
-  type ScoreObjectType = {
-    [key: string]: number
-  }
 
   const initialScoreObj: ScoreObjectType = {};
 
@@ -21,6 +20,14 @@ const ScoreWidget = ({ width, height }: { width: number, height: number }) => {
 
   // Initial Score Object is all the player with ids and score equal to zero
   const [score, setScore] = useState(initialScoreObj);
+
+  const getPlayerColors = (playerId: string) => {
+    return playerList.filter(player => player.playerId === playerId)[0].playerColors;
+  }
+
+  const getPlayerNameFromList = (playerId: string) => {
+    return playerList.filter(player => player.playerId === playerId)[0].playerName;
+  }
 
   useEffect(() => {
     socket.on("score-updation", (scoreObj) => {

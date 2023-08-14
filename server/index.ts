@@ -193,6 +193,8 @@ const startGame = async (roomName: string) => {
         for (let i = ROUND_TIME_SECONDS; i >= 0; --i) {
           if (gameStateObj.stopTimer) {
             updateValuesInGameState({ stopTimer: false }, roomName);
+            io.in(roomName).except(playerSocketId).emit('drawing-page-timer', { count: 0, message: "Player is drawing, guess what it is " + convertToUnderscores(gameStateObj.word) });
+            sendOnlyToSocketId(playerSocketId, 'drawing-page-timer', { count: 0, message: "Your turn to draw " + gameStateObj.word });
             break;
           }
 
@@ -321,7 +323,7 @@ io.on("connection", (socket) => {
     const roomId = uuidv4();
     socket.join(roomId);
     socket.emit("room-id", { roomId: roomId });
-
+    playerStateObj.roomId = roomId;
     if (!playerStateObj.name) {
       playerStateObj.name = getRandomValues(1, names)[0];
     }
@@ -332,13 +334,13 @@ io.on("connection", (socket) => {
     // to use such hacks
     setTimeout(() => {
       const players = getPlayersList(roomId);
-      console.log("PLAYERS_LIST", players)
       io.in(roomId).emit("players-event", players);
     }, 200);
   })
 
   socket.on("join-room", (roomId) => {
     socket.join(roomId);
+    playerStateObj.roomId = roomId;
 
     if (!playerStateObj.name) {
       playerStateObj.name = getRandomValues(1, names)[0];
@@ -385,16 +387,32 @@ io.on("connection", (socket) => {
   })
 
   socket.on("disconnect", () => {
+    const roomId = playerStateObj.roomId;
+    if (roomId) {
+      const gameStateObj = gameState.get(roomId);
+      if (gameStateObj) {
+        if (playerStateObj.playerId === gameStateObj.playerTurn) {
+          gameStateObj.stopTimer = true;
+        }
+        delete gameStateObj.score[socket.id];
+        delete gameStateObj.hasGuessedTheWord[socket.id]; 
+        io.in(roomId).emit("score-updation", gameStateObj.score);
+      }
+      const players = getPlayersList(roomId);
+      io.in(roomId).emit("players-event", players);
+    }
     playerStateMap.delete(socket.id);
-    // playerNameMap.delete(socket.id);
-    // Player should be removed from his active game
-    // Now how do we get the room id based upon the player name so we can remove it
-    // Seems like we would need an another data structure, let's store all player info
-    // in the player state
-    // An event should be emitted to other players telling them, that the player has left
   })
 });
 
 server.listen(port, () => {
   console.log(`listening on Port: ${port}`);
 });
+
+process.on('uncaughtException', (err) => {
+  console.error('unCaughtException', err);
+})
+
+process.on('unhandledRejection', (err) => {
+  console.error('unhandledRejection', err);
+})
