@@ -11,7 +11,11 @@ const ChatWidget = ({ height, width }: { height: number, width: number }) => {
   const socket = useSocket(state => state.socket);
   const roomId = useRoomId(state => state.roomId);
   const playerTurnId = usePlayerTurnId(state => state.playerTurnId);
-  const getPlayerColors = usePlayerList(state => state.getPlayerColors);
+  const playersList = usePlayerList(state => state.playerList);
+
+  const getPlayerColors = (playerId: string) => {
+    return playersList.filter(player => player.playerId === playerId)[0].playerColors;
+  }
 
   useEffect(() => {
     socket.on("recieve-message", ({ senderID, msg }) => {
