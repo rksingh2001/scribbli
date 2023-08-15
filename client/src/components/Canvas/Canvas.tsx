@@ -86,6 +86,9 @@ const Canvas = ({ disable }: { disable: boolean }) => {
     }
   }
 
+  // Possible Optimization Techniques,
+  // First mark all colors in the Clamped Array ImageData, and then paint to the canvas in the end
+  // Use flood fill instead of color fill
   const dfsColorFill = (posX: number, posY: number, colorToFill: string) => {
     const ctx = canvasRef.current?.getContext('2d');
     if (!ctx) {
