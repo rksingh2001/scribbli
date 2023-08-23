@@ -32,12 +32,13 @@ const LandingPage = () => {
 
   return (
     <div className="landing-page">
+      <p style={{ fontFamily: "Barriecito", fontSize: "10rem", color: "white" }}>Scribbli</p>
       <div className="name-div">
-        <h3 style={{ fontFamily: "sans-serif", color: "white" }}>Enter your name:</h3>
-        <input onChange={handleChange} value={playerName} />
-      </div>
+        {/* <h3 style={{ color: "white" }}>Enter your name:</h3> */}
+        <input placeholder="Enter your name..." onChange={handleChange} value={playerName} />
       <button onClick={handleJoinExistingRoomButton}>Join Existing Room</button>
       <button onClick={handleNewRoomCreation}>Create New Room</button>
+      </div>
     </div>
   )
 }

@@ -53,7 +53,7 @@ const NewRoomPage = () => {
       <div className="flexbox">Copy the ID</div>
       <div className="flexbox">Waiting for users to join...</div>
       <div className='select-rounds'>
-        <h6 style={{ fontFamily: "sans-serif", color: "white" }}>Number of Rounds:</h6>
+        <h5>Number of Rounds:</h5>
         <select onChange={handleSelect}>
           <option>1</option>
           <option selected>3</option>

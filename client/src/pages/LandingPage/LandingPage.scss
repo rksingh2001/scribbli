@@ -1,21 +1,20 @@
 .landing-page {
-    height: 100vh;
+    display: flex;
+    height: 90vh;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: 3rem;
+
+    p {
+        text-shadow: 0rem 0rem 1rem black;
+    }
+}
+
+.name-div {
     display: flex;
     justify-content: center;
     align-items: center;
     flex-direction: column;
-
-    input {
-        height: 30px;
-        width: 300px;
-    }
-}
-
-button {
-    // color: purple;
-    background-color: aliceblue;
-    height: 50px;
-    width: 300px;
-    margin: 30px;
-    font-size: large;
+    gap: 1.5rem;
 }

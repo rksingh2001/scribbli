@@ -72,7 +72,7 @@ const DrawingPage = () => {
       {isGameEnd ? <GameEndOverlay score={score} /> : null}
       <div style={{ display: 'flex', justifyContent: 'space-evenly', alignItems: 'center', flexDirection: 'row' }}>
         <ScoreWidget width={250} height={500} />
-        <Canvas width={800} height={500} disable={isDisabled} />
+        <Canvas disable={isDisabled} />
         <ChatWidget width={250} height={500} />
       </div>
       <div className="flexbox">

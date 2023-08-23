@@ -1,10 +1,21 @@
-body {
-    margin: 0;
+* {
     padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+body {
     height: 100%;
     overflow: hidden;
     color: black;
     background-color:#0e7490; // tailwind-teal-700
+    font-family: 'Comic Neue';
+    font-weight: 700;
+    font-size: 2rem;
+    color: #164e63; // tailwind-teal-900
+    background-image: url(./assets/background.svg);
+    background-size: cover;
+    background-position: center;
 }
 
 .flexbox {
@@ -28,4 +39,59 @@ body {
     align-items: center;
     flex-direction: column;
     font-size: 40px;
+}
+
+input {
+    all: unset;
+    height: 2rem;
+    aspect-ratio: 10;
+    font-size: 1.5rem;
+    background-color: white;
+    padding: 1rem;
+    color: rgb(102, 102, 102);
+}
+
+input::placeholder {
+    all: unset;
+    color: rgb(102, 102, 102);
+}
+
+input:active, input:focus{
+    outline: 5px solid #a5f3fc;
+}
+
+button {
+    all: unset;
+    background-color: white;
+    font-size: large;
+    height: 2rem;
+    aspect-ratio: 10;
+    font-size: 1.5rem;
+    text-align: center;
+    padding: 1rem;
+    color: #083344;
+}
+
+button:hover {
+    background-color: #083344;
+    color: white;
+    cursor: pointer;
+}
+
+select {
+    // A reset of styles, including removing the default dropdown arrow
+    appearance: none;
+    // Additional resets for further consistency
+    background-color: transparent;
+    border: none;
+    padding: 0 0 0 0.4em;
+    margin: 0;
+    font-family: inherit;
+    font-size: 1.5rem;
+    cursor: inherit;
+
+    option {
+     height: inherit;
+     width: inherit;
+    }
 }
