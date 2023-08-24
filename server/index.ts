@@ -30,6 +30,7 @@ type GameStateObjectType = {
   stopTimer: boolean // stopTimer tells whether to stop the current running timer or not
   numOfRounds: number // Number of rounds chosen for the game
   playerTurn: string | undefined // Player who is playing at the current moment
+  drawing: Array<Array<any>> // This will save all the events which are related to drawing on the canvas
 }
 
 type GameStateType = Map<string, GameStateObjectType>;
@@ -65,7 +66,8 @@ const initializeGameState = (socketId: string, roomId: string) => {
       hasGuessedTheWord: { [socketId]: false },
       stopTimer: false,
       numOfRounds: 3,
-      playerTurn: undefined
+      playerTurn: undefined,
+      drawing: []
     };
 
     gameState.set(roomId, newgameStateObj);
@@ -105,6 +107,7 @@ const handlePlayerTurnEnd = (roomId: string) => {
   })
 
   gameStateObj.word = undefined;
+  gameStateObj.drawing = [];
 
   // Clear the canvas
   io.in(roomId).emit('clear-canvas', {});
@@ -364,26 +367,41 @@ io.on("connection", (socket) => {
   socket.on("send_coordinates", ({ roomId, pos, color, lineWidth }) => {
     // Sends the message to all the clients
     // except the one it recieved it from
+    const gameStateObj = gameState.get(roomId);
+    gameStateObj?.drawing.push(["recieve_message", { pos, color, lineWidth }]);
     socket.to(roomId).emit("recieve_message", { pos, color, lineWidth });
   })
 
   socket.on("mouse-down", ({ roomId }) => {
     // data here is just {}
+    const gameStateObj = gameState.get(roomId);
+    gameStateObj?.drawing.push(["mouse-down", {}]);
     socket.to(roomId).emit("mouse-down", {});
   })
 
   socket.on("mouse-up", ({ roomId }) => {
     // data here is just {}
+    const gameStateObj = gameState.get(roomId);
+    gameStateObj?.drawing.push(["mouse-up", {}]);
     socket.to(roomId).emit("mouse-up", {});
   })
 
   socket.on("color-fill", ({ posX, posY, colorToFill, roomId }) => {
+    const gameStateObj = gameState.get(roomId);
+    gameStateObj?.drawing.push(["color-fill", { posX, posY, colorToFill }]);
     socket.to(roomId).emit("color-fill", { posX, posY, colorToFill });
   })
 
   socket.on("word-selected-to-draw", ({ roomId, word }: { roomId: string, word: string }) => {
     console.log('word-selected-to-draw', word);
     updateValuesInGameState({ word: word, stopTimer: true }, roomId);
+  })
+
+  socket.on("request-drawing", ({ roomId }) => {
+   const gameStateObj = gameState.get(roomId);
+   gameStateObj?.drawing.forEach(list => {
+    sendOnlyToSocketId(socket.id, list[0], list[1]);
+   })
   })
 
   socket.on("disconnect", () => {

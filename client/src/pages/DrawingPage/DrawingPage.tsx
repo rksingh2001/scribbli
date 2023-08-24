@@ -28,7 +28,7 @@ const DrawingPage = () => {
   const round = useGameState(state => state.round);
   const setRound = useGameState(state => state.setRound);
   const [isGameEnd, setIsGameEnd] = useState(false);
-  const [score, setScore] = useState({})
+  const [score, setScore] = useState({});
 
   useEffect(() => {
     if (socketID === playerTurnId) {
@@ -66,7 +66,7 @@ const DrawingPage = () => {
 
   return (
     <div className="drawing-page">
-      <div style={{ color: "white", fontSize: "larger" }} className="flexbox">Round: {round}</div>
+      <div className="flexbox">Round: {round}</div>
       <div><DrawingPageTimer /></div>
       {isTimer ? <SelectWordTimer /> : null}
       {isGameEnd ? <GameEndOverlay score={score} /> : null}

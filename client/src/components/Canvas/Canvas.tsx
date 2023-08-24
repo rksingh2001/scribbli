@@ -9,6 +9,10 @@ import useCanvasState from "../../store/canvasState";
 const ratio = 800 / 500;
 const innerWidth = window.innerWidth
 const canvasWidthPercentage = innerWidth <= 800 ? 0.9 : 0.557;
+// Timeout is there because on resizing window, resize event is being emitted
+// more than once, so as to now increase server load too much, we wait for a little
+// time before rerendering it
+let isTimeOutStarted = false;
 
 const Canvas = ({ disable }: { disable: boolean }) => {
   const [isPainting, setIsPainting] = useState(false);
@@ -18,21 +22,38 @@ const Canvas = ({ disable }: { disable: boolean }) => {
   const color = useCanvasState(state => state.color);
   const lineWidth = useCanvasState(state => state.lineWidth);
   const utilitySelected = useCanvasState(state => state.utilitySelected);
+  const width = useRef(innerWidth * canvasWidthPercentage);
+  const height = useRef(innerWidth * canvasWidthPercentage / ratio);
+  const calculatedScale = useRef(innerWidth * canvasWidthPercentage / 800);
 
-  const width = (innerWidth * canvasWidthPercentage);
-  const height = (innerWidth * canvasWidthPercentage / ratio);
-  const calculatedScale = innerWidth * canvasWidthPercentage / 800;
+  useEffect(() => {
+    window.addEventListener("resize", () => {
+      const innerWidth = window.innerWidth;
+      const canvasWidthPercentage = innerWidth <= 800 ? 0.9 : 0.557;
+      width.current = (innerWidth * canvasWidthPercentage);
+      height.current = (innerWidth * canvasWidthPercentage / ratio);
+      calculatedScale.current = (innerWidth * canvasWidthPercentage / 800);
+      if (isTimeOutStarted) return;
+      isTimeOutStarted = true;
+      setTimeout(() => {
+        socket.emit("request-drawing", { roomId: roomId });
+        isTimeOutStarted = false;
+      }, 500)
+    })
+  }, []);
 
   const applyScale = ({ posX, posY }: { posX: number, posY: number }): { posX: number, posY: number } => {
-    return { posX: posX * calculatedScale, posY: posY * calculatedScale };
+    console.log("APPLY SCALE", calculatedScale)
+    return { posX: posX * calculatedScale.current, posY: posY * calculatedScale.current };
   }
 
   const removeScale = ({ posX, posY }: { posX: number, posY: number }): { posX: number, posY: number } => {
-    return { posX: posX / calculatedScale, posY: posY / calculatedScale };
+    return { posX: posX / calculatedScale.current, posY: posY / calculatedScale.current };
   }
 
   useEffect(() => {
     socket.on("recieve_message", ({ pos, color, lineWidth }) => {
+      console.log("recieve_message", pos)
       draw(applyScale(pos), color, lineWidth);
     })
 
@@ -58,7 +79,7 @@ const Canvas = ({ disable }: { disable: boolean }) => {
     const context = canvasRef.current?.getContext('2d');
 
     if (context) {
-      context.lineWidth = lineWidth * calculatedScale;
+      context.lineWidth = lineWidth * calculatedScale.current;
       context.lineCap = "round";
       context.strokeStyle = color;
 
@@ -80,7 +101,7 @@ const Canvas = ({ disable }: { disable: boolean }) => {
     const context = canvasRef.current?.getContext('2d');
 
     if (context) {
-      context.clearRect(0, 0, width + 2, height + 2);
+      context.clearRect(0, 0, width.current + 2, height.current + 2);
     } else {
       throw new Error("Canvas context not found.");
     }
@@ -101,7 +122,7 @@ const Canvas = ({ disable }: { disable: boolean }) => {
     posX = Math.round(posX);
     posY = Math.round(posY);
 
-    const imageData: ImageData = ctx.getImageData(0, 0, width, height);
+    const imageData: ImageData = ctx.getImageData(0, 0, width.current, height.current);
 
     const startColor = getPixelColor(posX, posY);
     const replacementColor: number[] = [0, 0, 0, 0];
@@ -133,9 +154,9 @@ const Canvas = ({ disable }: { disable: boolean }) => {
         const offset = 2;
         for (let i = 1; i <= offset; ++i) {
           if (posX - i >= 0) pixelStack.push({ posX: posX - i, posY });
-          if (posX + i <= width - 1) pixelStack.push({ posX: posX + i, posY });
+          if (posX + i <= width.current - 1) pixelStack.push({ posX: posX + i, posY });
           if (posY - i >= 0) pixelStack.push({ posX, posY: posY - i });
-          if (posY + i <= height - 1) pixelStack.push({ posX, posY: posY + i });
+          if (posY + i <= height.current - 1) pixelStack.push({ posX, posY: posY + i });
         }
       }
     }
@@ -269,16 +290,16 @@ const Canvas = ({ disable }: { disable: boolean }) => {
     disable ?
       <canvas
         id="canvas"
-        width={width}
-        height={height}
+        width={width.current}
+        height={height.current}
         ref={canvasRef}
         style={{ backgroundColor: "white" }}
       />
       :
       <canvas
         id="canvas"
-        width={width}
-        height={height}
+        width={width.current}
+        height={height.current}
         ref={canvasRef}
         onClick={handleClick}
         onMouseDown={handleMouseDown}
