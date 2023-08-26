@@ -43,7 +43,6 @@ const Canvas = ({ disable }: { disable: boolean }) => {
   }, []);
 
   const applyScale = ({ posX, posY }: { posX: number, posY: number }): { posX: number, posY: number } => {
-    console.log("APPLY SCALE", calculatedScale)
     return { posX: posX * calculatedScale.current, posY: posY * calculatedScale.current };
   }
 
@@ -53,7 +52,6 @@ const Canvas = ({ disable }: { disable: boolean }) => {
 
   useEffect(() => {
     socket.on("recieve_message", ({ pos, color, lineWidth }) => {
-      console.log("recieve_message", pos)
       draw(applyScale(pos), color, lineWidth);
     })
 
