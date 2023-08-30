@@ -1,21 +1,34 @@
-import { useContext, useState, useEffect } from 'react';
+import { useContext, useState, useEffect, useRef } from 'react';
 import './ChatWidget.scss';
 import useRoomId from '../../store/roomId';
 import useSocket from '../../store/socket';
 import usePlayerTurnId from '../../store/playerTurnStore';
 import usePlayerList from '../../store/playerList';
+import { BREAK_POINT, RATIO as ratio } from '../../helpers/constants';
 
-const ChatWidget = ({ height, width }: { height: number, width: number }) => {
+const innerWidth = window.innerWidth;
+const canvasWidthPercentage = innerWidth <= BREAK_POINT ? 0.9 : 0.557;
+const ChatWidget = () => {
   const [messages, setMessages] = useState([{ msg: "", colors: ["white", "white"] }]);  // [message, senderId]
   const [inputValue, setInputValue] = useState("");
   const socket = useSocket(state => state.socket);
   const roomId = useRoomId(state => state.roomId);
   const playerTurnId = usePlayerTurnId(state => state.playerTurnId);
   const playersList = usePlayerList(state => state.playerList);
+  const width = useRef(innerWidth * 0.15)
+  const [height, setHeight] = useState(innerWidth * canvasWidthPercentage / ratio);
 
   const getPlayerColors = (playerId: string) => {
     return playersList.filter(player => player.playerId === playerId)[0].playerColors;
   }
+
+  useEffect(() => {
+    window.addEventListener("resize", () => {
+      const innerWidth = window.innerWidth;
+      width.current = (innerWidth * 0.15);
+      setHeight(innerWidth * canvasWidthPercentage / ratio);
+    })
+  }, []);
 
   useEffect(() => {
     socket.on("recieve-message", ({ senderID, msg }) => {
@@ -38,7 +51,7 @@ const ChatWidget = ({ height, width }: { height: number, width: number }) => {
   }
 
   return (
-    <div style={{ height: height, width: width }} className="chat-widget">
+    <div style={{ height: height, width: width.current }} className="chat-widget">
       <div className='chat-messages'>
         {messages.map((message, idx) => {
           return (

@@ -398,10 +398,14 @@ io.on("connection", (socket) => {
   })
 
   socket.on("request-drawing", ({ roomId }) => {
-   const gameStateObj = gameState.get(roomId);
-   gameStateObj?.drawing.forEach(list => {
-    sendOnlyToSocketId(socket.id, list[0], list[1]);
-   })
+    // TODO: Don't allow another request-drawing for same socket id
+    // in case one is already running
+    // Also make sure to send a clear canvas event in the beginning in
+    // it doesn't run
+    const gameStateObj = gameState.get(roomId);
+    gameStateObj?.drawing.forEach(list => {
+      sendOnlyToSocketId(socket.id, list[0], list[1]);
+    })
   })
 
   socket.on("disconnect", () => {
@@ -413,7 +417,7 @@ io.on("connection", (socket) => {
           gameStateObj.stopTimer = true;
         }
         delete gameStateObj.score[socket.id];
-        delete gameStateObj.hasGuessedTheWord[socket.id]; 
+        delete gameStateObj.hasGuessedTheWord[socket.id];
         io.in(roomId).emit("score-updation", gameStateObj.score);
       }
       const players = getPlayersList(roomId);

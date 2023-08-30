@@ -1,16 +1,31 @@
 import "./ScoreWidget.scss";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import usePlayerList from "../../store/playerList";
 import useSocket from "../../store/socket";
-import { getPlayerNameFromList, getSortedScoreArray } from "../../helpers/utilities";
+import { getSortedScoreArray } from "../../helpers/utilities";
+// import { BREAK_POINT } from "../../helpers/constants";
+import { RATIO as ratio, BREAK_POINT } from "../../helpers/constants";
 
 type ScoreObjectType = {
   [key: string]: number
 }
 
-const ScoreWidget = ({ width, height }: { width: number, height: number }) => {
+const innerWidth = window.innerWidth;
+const canvasWidthPercentage = innerWidth <= BREAK_POINT ? 0.9 : 0.557;
+
+const ScoreWidget = () => {
   const playerList = usePlayerList(state => state.playerList);
   const socket = useSocket(state => state.socket);
+  const width = useRef(innerWidth * 0.15)
+  const [height, setHeight] = useState(innerWidth * canvasWidthPercentage / ratio);
+
+  useEffect(() => {
+    window.addEventListener("resize", () => {
+      const innerWidth = window.innerWidth;
+      width.current = (innerWidth * 0.15);
+      setHeight(innerWidth * canvasWidthPercentage / ratio);
+    })
+  }, []);
 
   const initialScoreObj: ScoreObjectType = {};
 
@@ -39,7 +54,7 @@ const ScoreWidget = ({ width, height }: { width: number, height: number }) => {
   return (
     <div
       className="score-widget"
-      style={{ width: width, height: height }}
+      style={{ height: height }}
     >
       {
         getSortedScoreArray(score).map(sc => {

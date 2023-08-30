@@ -2,6 +2,12 @@
   color: black;
   border: 5px solid black;
   background-color: white;
+  width: 15%;
+  font-size: 1.25rem;
+
+  div {
+    padding: 0.2rem;
+  }
 }
 
 .score-widget-player {
@@ -12,7 +18,7 @@
 }
 
 .score-widget-player-name {
-  width: 80%;
+  width: 65%;
   height: 100%;
   overflow: hidden;
 }

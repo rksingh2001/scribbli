@@ -70,10 +70,17 @@ const DrawingPage = () => {
       <div><DrawingPageTimer /></div>
       {isTimer ? <SelectWordTimer /> : null}
       {isGameEnd ? <GameEndOverlay score={score} /> : null}
-      <div style={{ display: 'flex', justifyContent: 'space-evenly', alignItems: 'center', flexDirection: 'row' }}>
-        <ScoreWidget width={250} height={500} />
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-evenly',
+          alignItems: 'center',
+          flexDirection: 'row',
+          gap: "0.25rem"
+        }}>
+        <ScoreWidget />
         <Canvas disable={isDisabled} />
-        <ChatWidget width={250} height={500} />
+        <ChatWidget />
       </div>
       <div className="flexbox">
         <ColorWidget width={400} height={80} />

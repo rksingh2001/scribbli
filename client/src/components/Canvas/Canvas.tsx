@@ -6,9 +6,10 @@ import useSocket from "../../store/socket";
 import useCanvasState from "../../store/canvasState";
 
 // Fixed ratio of width to height
-const ratio = 800 / 500;
+// const ratio = BASE_CANVAS_WIDTH / 500;
+import { RATIO as ratio, BASE_CANVAS_WIDTH, BREAK_POINT } from "../../helpers/constants";
 const innerWidth = window.innerWidth
-const canvasWidthPercentage = innerWidth <= 800 ? 0.9 : 0.557;
+const canvasWidthPercentage = innerWidth <= BREAK_POINT ? 0.9 : 0.557;
 // Timeout is there because on resizing window, resize event is being emitted
 // more than once, so as to now increase server load too much, we wait for a little
 // time before rerendering it
@@ -24,17 +25,19 @@ const Canvas = ({ disable }: { disable: boolean }) => {
   const utilitySelected = useCanvasState(state => state.utilitySelected);
   const width = useRef(innerWidth * canvasWidthPercentage);
   const height = useRef(innerWidth * canvasWidthPercentage / ratio);
-  const calculatedScale = useRef(innerWidth * canvasWidthPercentage / 800);
+  const calculatedScale = useRef(innerWidth * canvasWidthPercentage / BASE_CANVAS_WIDTH);
 
   useEffect(() => {
     window.addEventListener("resize", () => {
       const innerWidth = window.innerWidth;
-      const canvasWidthPercentage = innerWidth <= 800 ? 0.9 : 0.557;
+      const canvasWidthPercentage = innerWidth <= BASE_CANVAS_WIDTH ? 0.9 : 0.557;
       width.current = (innerWidth * canvasWidthPercentage);
       height.current = (innerWidth * canvasWidthPercentage / ratio);
-      calculatedScale.current = (innerWidth * canvasWidthPercentage / 800);
+      calculatedScale.current = (innerWidth * canvasWidthPercentage / BASE_CANVAS_WIDTH);
       if (isTimeOutStarted) return;
       isTimeOutStarted = true;
+      // This timeout is there because we don't want to overload the server, in case there
+      // are a lot of window resizes in a short period of time.
       setTimeout(() => {
         socket.emit("request-drawing", { roomId: roomId });
         isTimeOutStarted = false;
@@ -182,8 +185,6 @@ const Canvas = ({ disable }: { disable: boolean }) => {
     const context = canvasRef.current?.getContext('2d');
 
     if (context) {
-
-
       if (canvasRef.current === null) {
         console.error("Error: CanvasRef.current is null");
         return;
