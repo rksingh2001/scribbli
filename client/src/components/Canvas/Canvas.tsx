@@ -8,8 +8,6 @@ import useCanvasState from "../../store/canvasState";
 // Fixed ratio of width to height
 // const ratio = BASE_CANVAS_WIDTH / 500;
 import { RATIO as ratio, BASE_CANVAS_WIDTH, BREAK_POINT } from "../../helpers/constants";
-const innerWidth = window.innerWidth
-const canvasWidthPercentage = innerWidth <= BREAK_POINT ? 0.9 : 0.557;
 // Timeout is there because on resizing window, resize event is being emitted
 // more than once, so as to now increase server load too much, we wait for a little
 // time before rerendering it
@@ -23,8 +21,9 @@ const Canvas = ({ disable }: { disable: boolean }) => {
   const color = useCanvasState(state => state.color);
   const lineWidth = useCanvasState(state => state.lineWidth);
   const utilitySelected = useCanvasState(state => state.utilitySelected);
-  const width = useRef(innerWidth * canvasWidthPercentage);
-  const height = useRef(innerWidth * canvasWidthPercentage / ratio);
+  const canvasWidthPercentage = window.innerWidth <= BREAK_POINT ? 0.9 : 0.557;
+  const width = useRef(window.innerWidth * canvasWidthPercentage);
+  const height = useRef(window.innerWidth * canvasWidthPercentage / ratio);
   const calculatedScale = useRef(innerWidth * canvasWidthPercentage / BASE_CANVAS_WIDTH);
 
   useEffect(() => {

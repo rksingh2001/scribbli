@@ -10,14 +10,13 @@ type ScoreObjectType = {
   [key: string]: number
 }
 
-const innerWidth = window.innerWidth;
-const canvasWidthPercentage = innerWidth <= BREAK_POINT ? 0.9 : 0.557;
 
 const ScoreWidget = () => {
   const playerList = usePlayerList(state => state.playerList);
   const socket = useSocket(state => state.socket);
-  const width = useRef(innerWidth * 0.15)
-  const [height, setHeight] = useState(innerWidth * canvasWidthPercentage / ratio);
+  const width = useRef(window.innerWidth * 0.15)
+  const canvasWidthPercentage = window.innerWidth <= BREAK_POINT ? 0.9 : 0.557;
+  const [height, setHeight] = useState(window.innerWidth * canvasWidthPercentage / ratio);
 
   useEffect(() => {
     window.addEventListener("resize", () => {
