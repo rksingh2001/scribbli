@@ -76,7 +76,7 @@ const DrawingPage = () => {
           justifyContent: 'space-evenly',
           alignItems: 'center',
           flexDirection: 'row',
-          gap: "0.25rem"
+          gap: "1%"
         }}>
         <ScoreWidget />
         <Canvas disable={isDisabled} />

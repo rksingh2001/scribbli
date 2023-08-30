@@ -10,7 +10,6 @@ type ScoreObjectType = {
   [key: string]: number
 }
 
-
 const ScoreWidget = () => {
   const playerList = usePlayerList(state => state.playerList);
   const socket = useSocket(state => state.socket);
