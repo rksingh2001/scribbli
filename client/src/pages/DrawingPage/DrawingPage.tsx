@@ -66,7 +66,7 @@ const DrawingPage = () => {
 
   return (
     <div className="drawing-page">
-      <div className="flexbox">Round: {round}</div>
+      <div style={{ fontSize: "2rem" }} className="flexbox">Round: {round}</div>
       <div><DrawingPageTimer /></div>
       {isTimer ? <SelectWordTimer /> : null}
       {isGameEnd ? <GameEndOverlay score={score} /> : null}
