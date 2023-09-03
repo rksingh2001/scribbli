@@ -82,7 +82,7 @@ const DrawingPage = () => {
         <Canvas disable={isDisabled} />
         <ChatWidget />
       </div>
-      <div className="flexbox">
+      <div style={{ gap: "0.5rem" }} className="flexbox">
         <ColorWidget width={400} height={80} />
         <LineWidthPicker width={80} height={80} />
         <UtilitiesWidget width={40} height={80} />

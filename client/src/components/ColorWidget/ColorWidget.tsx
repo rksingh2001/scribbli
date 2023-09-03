@@ -42,7 +42,7 @@ const ColorWidget = ({ width, height }: { width: number, height: number }) => {
             color === currentColor ?
               <div style={{ backgroundColor: color, height: height / 2, width: width / 10.39, border: "1px solid white" }}></div>
               :
-              <div color={color} onClick={handleClick} style={{ backgroundColor: color, height: height / 2, width: width / 10.39, border: "1px solid black" }}></div>
+              <div color={color} onClick={handleClick} style={{ backgroundColor: color, height: height / 2, width: width / 10.39 }}></div>
           )
         })
       }
