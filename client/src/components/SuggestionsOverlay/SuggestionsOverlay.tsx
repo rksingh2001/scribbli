@@ -59,6 +59,7 @@ const SuggestionsOverlay = () => {
             }
           })}
       </div>
+      <div style={{ height: "5rem" }}></div>
     </div>
   )
 }
