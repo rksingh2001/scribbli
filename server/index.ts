@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 import { Server } from 'socket.io';
 import cors from 'cors';
 import http from 'http';
-import { convertToUnderscores, getPlayersList, getRandomValues, sendOnlyToSocketId, sleep } from './utilities';
+import { convertToUnderscores, getPlayersList, getRandomValues, sendOnlyToPlayer, sleep } from './utilities';
 import { colors, names, ROUND_TIME_SECONDS, suggestions } from './constants';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -44,13 +44,24 @@ type PlayerStateType = {
 
 type PlayerStateMapType = Map<string, PlayerStateType>;
 
+type RoomStateType = {
+  playersId: string[]
+}
+
 export const playerStateMap: PlayerStateMapType = new Map();
+
+// Different than the game state in the sense, a single room can
+// have multiple games played
+export const roomStateMap: Map<string, RoomStateType> = new Map();
+
+// Maps playerId -> socketId
+export const currentActiveSocketId: Map<string, string> = new Map();
 
 // roomId -> GameStateObject
 const gameState: GameStateType = new Map();
 const safeAssign: <T>(target: T, ...sources: Partial<T>[]) => T = Object.assign
 
-const initializeGameState = (socketId: string, roomId: string) => {
+const initializeGameState = (playerId: string, roomId: string) => {
   const gameStateObj = gameState.get(roomId);
 
   const playersList = getPlayersList(roomId);
@@ -63,7 +74,7 @@ const initializeGameState = (socketId: string, roomId: string) => {
     const newgameStateObj: GameStateObjectType = {
       isPlaying: false,
       score: scoreObj,
-      hasGuessedTheWord: { [socketId]: false },
+      hasGuessedTheWord: { [playerId]: false },
       stopTimer: false,
       numOfRounds: 3,
       playerTurn: undefined,
@@ -117,7 +128,7 @@ export const io = new Server(server, {
   cors: {
     origin: `*`,
     methods: ["GET", "POST"]
-  }
+  },
 });
 
 app.get("/", (req, res) => {
@@ -141,33 +152,37 @@ const startGame = async (roomName: string) => {
     console.log("ROUND BEGAN", currentRound);
     // Limited to max 8 iterations so as not to create a lot of garbage memory
     for (let i = 0; i < 8; ++i) {
-      const room = io?.sockets?.adapter?.rooms?.get(roomName) ?? "";
+      // const room = io?.sockets?.adapter?.rooms?.get(roomName) ?? "";
+      const room = roomStateMap.get(roomName)?.playersId;
       if (!room) {
         console.error("Room doesn't exist");
         return;
       }
 
-      let playerSocketId = "";
+      let playerId = "";
 
-      for (const socketId of room) {
-        if (!visitedPlayers.has(socketId)) {
-          playerSocketId = socketId;
+      for (const playerIdString of room) {
+        if (!visitedPlayers.has(playerIdString)) {
+          playerId = playerIdString;
           break;
         }
       }
 
-      if (playerSocketId !== "") {
+      const socketId = currentActiveSocketId.get(playerId);
+      if (!socketId) return;
+
+      if (playerId !== "") {
         // Assign a player turn
         if (i === 0 && currentRound === 1) {
-          updateValuesInGameState({ playerTurn: playerSocketId }, roomName);
+          updateValuesInGameState({ playerTurn: playerId }, roomName);
           io.in(roomName).emit("start", {
-            playerTurn: playerSocketId,
+            playerTurn: playerId,
             currentRound: currentRound
           });
         } else {
-          updateValuesInGameState({ playerTurn: playerSocketId }, roomName);
+          updateValuesInGameState({ playerTurn: playerId }, roomName);
           io.in(roomName).emit("change-player-turn", {
-            playerTurn: playerSocketId,
+            playerTurn: playerId,
             currentRound: currentRound
           })
         }
@@ -175,7 +190,7 @@ const startGame = async (roomName: string) => {
         // Start of player's turn in a round
         const randomSuggestions = getRandomValues(3, suggestions);
         updateValuesInGameState({ word: randomSuggestions[0] }, roomName); // Sets a default word in case no word is selected
-        sendOnlyToSocketId(playerSocketId, "random-suggestions", { randomSuggestions: randomSuggestions });
+        sendOnlyToPlayer(playerId, "random-suggestions", { randomSuggestions: randomSuggestions });
 
         // This controls the timer on the frontend while selecting
         // any options for drawing
@@ -196,17 +211,18 @@ const startGame = async (roomName: string) => {
         for (let i = ROUND_TIME_SECONDS; i >= 0; --i) {
           if (gameStateObj.stopTimer) {
             updateValuesInGameState({ stopTimer: false }, roomName);
-            io.in(roomName).except(playerSocketId).emit('drawing-page-timer', { count: 0, message: "Player is drawing, guess what it is " + convertToUnderscores(gameStateObj.word) });
-            sendOnlyToSocketId(playerSocketId, 'drawing-page-timer', { count: 0, message: "Your turn to draw " + gameStateObj.word });
+            console.log(socketId);
+            io.in(roomName).except(socketId).emit('drawing-page-timer', { count: 0, message: "Player is drawing, guess what it is " + convertToUnderscores(gameStateObj.word) });
+            sendOnlyToPlayer(playerId, 'drawing-page-timer', { count: 0, message: "Your turn to draw " + gameStateObj.word });
             break;
           }
 
-          io.in(roomName).except(playerSocketId).emit('drawing-page-timer', { count: i, message: "Player is drawing, guess what it is " + convertToUnderscores(gameStateObj.word) });
-          sendOnlyToSocketId(playerSocketId, 'drawing-page-timer', { count: i, message: "Your turn to draw " + gameStateObj.word });
+          io.in(roomName).except(socketId).emit('drawing-page-timer', { count: i, message: "Player is drawing, guess what it is " + convertToUnderscores(gameStateObj.word) });
+          sendOnlyToPlayer(playerId, 'drawing-page-timer', { count: i, message: "Your turn to draw " + gameStateObj.word });
           await sleep(1000);
         }
 
-        visitedPlayers.add(playerSocketId);
+        visitedPlayers.add(playerId);
 
         // End of player's turn in a round
         handlePlayerTurnEnd(roomName);
@@ -291,31 +307,40 @@ const matchStringAndUpdateScore = (roomId: string, message: string, socketId: st
 
 io.on("connection", (socket) => {
   console.log(`User Connected: ${socket.id}`);
-
+  
   // Create Player State Object
   let playerStateObj: PlayerStateType = {
-    playerId: socket.id,
+    playerId: undefined,
     roomId: undefined,
     name: undefined,
     colors: getRandomValues(1, colors)[0]
   }
-  const isPlayerObj = playerStateMap.get(socket.id);
-  if (!isPlayerObj) {
-    playerStateMap.set(socket.id, playerStateObj);
-  } else {
-    playerStateObj = isPlayerObj;
-  }
+
+  socket.on("player-id", ({ playerId }) => {
+    playerStateObj.playerId = playerId;    
+
+    const isPlayerObj = playerStateMap.get(playerId);
+    if (!isPlayerObj) {
+      playerStateMap.set(playerId, playerStateObj);
+    } else {
+      playerStateObj = isPlayerObj;
+    }
+    
+    if (!playerStateObj.playerId) return;
+    currentActiveSocketId.set(playerStateObj.playerId, socket.id);
+  })
 
   socket.on("send-message", ({ roomId, msg }) => {
-    const socketID = socket.id;
-    matchStringAndUpdateScore(roomId, msg, socketID);
+    // const socketID = socket.id;
+    if (!playerStateObj.playerId) return;
+    matchStringAndUpdateScore(roomId, msg, playerStateObj.playerId);
 
     if (msg.toLowerCase() === gameState.get(roomId)?.word?.toLowerCase()) {
       const message = playerStateObj.name + " has guessed the correct word ✅";
-      io.to(roomId).emit("recieve-message", { senderID: socketID, msg: message });
+      io.to(roomId).emit("recieve-message", { senderID: playerStateObj.playerId, msg: message });
     } else {
       msg = playerStateObj.name + ": " + msg;
-      io.to(roomId).emit("recieve-message", { senderID: socketID, msg: msg });
+      io.to(roomId).emit("recieve-message", { senderID: playerStateObj.playerId, msg: msg });
     }
   })
 
@@ -324,6 +349,9 @@ io.on("connection", (socket) => {
     // of the room to create room, users will be able
     // to join the room if they have socket.id of that user
     const roomId = uuidv4();
+    if (!playerStateObj.playerId) return;
+    const playersId: string[] = [playerStateObj.playerId];
+    roomStateMap.set(roomId, { playersId });
     socket.join(roomId);
     socket.emit("room-id", { roomId: roomId });
     playerStateObj.roomId = roomId;
@@ -343,6 +371,9 @@ io.on("connection", (socket) => {
 
   socket.on("join-room", (roomId) => {
     socket.join(roomId);
+    const roomStateObj = roomStateMap.get(roomId);
+    if (!roomStateObj || !playerStateObj.playerId) return;
+    roomStateObj.playersId.push(playerStateObj.playerId);
     playerStateObj.roomId = roomId;
 
     if (!playerStateObj.name) {
@@ -359,7 +390,8 @@ io.on("connection", (socket) => {
   })
 
   socket.on("start", ({ roomId, numOfRounds }) => {
-    initializeGameState(socket.id, roomId);
+    if (!playerStateObj.playerId) return;
+    initializeGameState(playerStateObj.playerId, roomId);
     updateValuesInGameState({ isPlaying: true, numOfRounds: numOfRounds }, roomId);
     startGame(roomId);
   })
@@ -380,7 +412,6 @@ io.on("connection", (socket) => {
   })
 
   socket.on("mouse-up", ({ roomId }) => {
-    // data here is just {}
     const gameStateObj = gameState.get(roomId);
     gameStateObj?.drawing.push(["mouse-up", {}]);
     socket.to(roomId).emit("mouse-up", {});
@@ -404,7 +435,8 @@ io.on("connection", (socket) => {
     // it doesn't run
     const gameStateObj = gameState.get(roomId);
     gameStateObj?.drawing.forEach(list => {
-      sendOnlyToSocketId(socket.id, list[0], list[1]);
+      if (!playerStateObj.playerId) return;
+      sendOnlyToPlayer(playerStateObj.playerId, list[0], list[1]);
     })
   })
 
@@ -416,14 +448,25 @@ io.on("connection", (socket) => {
         if (playerStateObj.playerId === gameStateObj.playerTurn) {
           gameStateObj.stopTimer = true;
         }
-        delete gameStateObj.score[socket.id];
-        delete gameStateObj.hasGuessedTheWord[socket.id];
+        if (!playerStateObj.playerId) return;
+        delete gameStateObj.score[playerStateObj.playerId];
+        delete gameStateObj.hasGuessedTheWord[playerStateObj.playerId];
         io.in(roomId).emit("score-updation", gameStateObj.score);
       }
+
+      const roomStateObj = roomStateMap.get(roomId);
+      if (!roomStateObj) return;
+      roomStateObj.playersId = roomStateObj.playersId.filter(playerId => playerId !== playerStateObj.playerId);
+      if (roomStateObj.playersId.length === 0) {
+        gameState.delete(roomId);
+        roomStateMap.delete(roomId);
+      }
+
       const players = getPlayersList(roomId);
       io.in(roomId).emit("players-event", players);
     }
-    playerStateMap.delete(socket.id);
+    if (!playerStateObj.playerId) return;
+    playerStateMap.delete(playerStateObj.playerId);
   })
 });
 

@@ -56,7 +56,7 @@ const ScoreWidget = () => {
     >
       {
         getSortedScoreArray(score).map(sc => {
-          if (sc[0] === socket.id)
+          if (sc[0] === localStorage.getItem("playerId"))
             return (
               <div style={{ backgroundColor: getPlayerColors(sc[0])[0], color: getPlayerColors(sc[0])[1] }} className="score-widget-player" key={sc[0]}>
                 <div className="score-widget-player-name">{getPlayerNameFromList(sc[0])}</div>

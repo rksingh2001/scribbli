@@ -1,4 +1,4 @@
-import { io, playerStateMap } from './index';
+import { currentActiveSocketId, io, playerStateMap, roomStateMap } from './index';
 
 type playerObjType = {
   playerId: string,
@@ -28,7 +28,9 @@ export const getRandomValues = <T>(count: number, list: T[]) => {
   return response;
 }
 
-export const sendOnlyToSocketId = (socketId: string, eventName: string, data: object | null) => {
+export const sendOnlyToPlayer = (playerId: string, eventName: string, data: object | null) => {
+  const socketId = currentActiveSocketId.get(playerId);
+  if (!socketId) return;
   const socket = io.sockets.sockets.get(socketId);
   if (socket) {
     socket.emit(eventName, data);
@@ -37,17 +39,18 @@ export const sendOnlyToSocketId = (socketId: string, eventName: string, data: ob
 
 // Returns the list of players with their names
 export const getPlayersList = (roomId: string) => {
-  const playersSocketId = io.sockets.adapter.rooms.get(roomId);
-  if (playersSocketId) {
-    const playersSocketList = [...playersSocketId];
+  // const playersSocketId = io.sockets.adapter.rooms.get(roomId);
+  const playerIds = roomStateMap.get(roomId)?.playersId;
+  if (playerIds) {
+    const playersSocketList = [...playerIds];
     const playersList: playerObjType[] = [];
 
-    playersSocketList.forEach(socketId => {
-      const playerStateObj = playerStateMap.get(socketId);
+    playersSocketList.forEach(playerId => {
+      const playerStateObj = playerStateMap.get(playerId);
       console.log("playerList", playerStateObj)
       if (playerStateObj) {
         playersList.push({
-          playerId: socketId,
+          playerId: playerId,
           playerName: playerStateObj.name ?? "",
           playerColors: playerStateObj.colors ?? ["white", "black"],
         });

@@ -42,7 +42,7 @@ const ChatWidget = () => {
 
   const handleKeyDown = (e: any) => {
     if (e.key !== 'Enter') return;
-    if (socket.id === playerTurnId) return;
+    if (localStorage.getItem("playerId") === playerTurnId) return;
 
     // Emit the Message to rest of the users
     socket.emit("send-message", { roomId: roomId, msg: inputValue });
@@ -59,7 +59,7 @@ const ChatWidget = () => {
         })}
       </div>
       <div className='chat-input'>
-        {socket.id != playerTurnId ? <input onKeyDown={handleKeyDown} onChange={handleChange} value={inputValue} /> : <input disabled />}
+        {localStorage.getItem("playerId") != playerTurnId ? <input onKeyDown={handleKeyDown} onChange={handleChange} value={inputValue} /> : <input disabled />}
       </div>
     </div>
   )

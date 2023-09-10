@@ -20,7 +20,8 @@ type ScoreObjectType = {
 
 const DrawingPage = () => {
   const socket = useSocket(state => state.socket);
-  const [socketID] = useState(socket.id);
+  // const [socketID] = useState(socket.id);
+  const playerId = localStorage.getItem("playerId");
   const playerTurnId = usePlayerTurnId((state) => state.playerTurnId);
   const setPlayerTurnId = usePlayerTurnId((state) => state.setPlayerTurnId);
   const [isDisabled, setIsDisabled] = useGameState(state => [state.isDisabled, state.setIsDisabled]);
@@ -31,7 +32,7 @@ const DrawingPage = () => {
   const [score, setScore] = useState({});
 
   useEffect(() => {
-    if (socketID === playerTurnId) {
+    if (playerId === playerTurnId) {
       setIsDisabled(false);
     }
 
@@ -39,7 +40,7 @@ const DrawingPage = () => {
       setPlayerTurnId(data.playerTurn);
       setRound(data.currentRound);
 
-      if (socketID === data.playerTurn) {
+      if (playerId === data.playerTurn) {
         setIsDisabled(true);
       } else {
         if (isDisabled) {
@@ -57,7 +58,7 @@ const DrawingPage = () => {
   }, []);
 
   useEffect(() => {
-    if (playerTurnId === socketID) {
+    if (playerTurnId === playerId) {
       setIsDisabled(false);
     } else {
       if (!isDisabled) setIsDisabled(true);
