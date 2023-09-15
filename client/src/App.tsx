@@ -11,11 +11,11 @@ const App = () => {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<LandingPage />} />
         <Route path="/DrawingPage" element={<DrawingPage />} />
         <Route path="/NewRoomPage" element={<NewRoomPage />} />
         <Route path="/WaitingRoomPage" element={<WaitingRoomPage />} />
         <Route path="/JoinExistingRoomPage" element={<JoinExistingRoomPage />} />
+        <Route path="*" element={<LandingPage />} />
       </Routes>
     </BrowserRouter>
   );
