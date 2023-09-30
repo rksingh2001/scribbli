@@ -3,7 +3,7 @@ import { io, Socket } from "socket.io-client";
 import useGameState from "./gameState";
 import { v4 as uuidv4 } from 'uuid';
 
-export const socket = io("http://localhost:8000");
+export const socket = io(import.meta.env.VITE_SERVER_URL);
 
 type SocketType = {
   socket: Socket
