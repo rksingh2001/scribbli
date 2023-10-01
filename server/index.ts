@@ -481,3 +481,7 @@ process.on('uncaughtException', (err) => {
 process.on('unhandledRejection', (err) => {
   console.error('unhandledRejection', err);
 })
+
+app.get("/ping", (req, res) => {
+  res.send("pong");
+})
