@@ -168,6 +168,10 @@ const startGame = async (roomName: string) => {
         }
       }
 
+      if (!playerId) {
+        break;
+      }
+
       const socketId = currentActiveSocketId.get(playerId);
       if (!socketId) return;
 
@@ -211,7 +215,6 @@ const startGame = async (roomName: string) => {
         for (let i = ROUND_TIME_SECONDS; i >= 0; --i) {
           if (gameStateObj.stopTimer) {
             updateValuesInGameState({ stopTimer: false }, roomName);
-            console.log(socketId);
             io.in(roomName).except(socketId).emit('drawing-page-timer', { count: 0, message: "Player is drawing, guess what it is " + convertToUnderscores(gameStateObj.word) });
             sendOnlyToPlayer(playerId, 'drawing-page-timer', { count: 0, message: "Your turn to draw " + gameStateObj.word });
             break;
